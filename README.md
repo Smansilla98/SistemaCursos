@@ -21,6 +21,56 @@ Sistema web completo para la gestión de cursos online con roles de administrado
 
 ## 🔧 Instalación
 
+### 🐳 Opción 1: Usando Docker (Recomendado)
+
+La forma más fácil de levantar el proyecto es usando Docker:
+
+1. **Clonar el repositorio o navegar al directorio**:
+```bash
+cd sistema-cursos
+```
+
+2. **Usar el script de inicio automático**:
+```bash
+./docker-start.sh
+```
+
+O manualmente:
+
+```bash
+# Copiar archivo de entorno
+cp .env.docker.example .env
+
+# Levantar contenedores
+docker-compose up -d --build
+
+# Instalar dependencias
+docker-compose exec app composer install
+
+# Generar clave
+docker-compose exec app php artisan key:generate
+
+# Ejecutar migraciones
+docker-compose exec app php artisan migrate
+
+# Ejecutar seeders
+docker-compose exec app php artisan db:seed
+
+# Crear enlace de storage
+docker-compose exec app php artisan storage:link
+```
+
+3. **Acceder a la aplicación**:
+- URL: http://localhost:8000
+- MySQL: localhost:3306
+  - Usuario: `laravel_user`
+  - Contraseña: `laravel_password`
+  - Base de datos: `sistema_cursos`
+
+📖 **Ver documentación completa de Docker**: [DOCKER.md](DOCKER.md)
+
+### 💻 Opción 2: Instalación Manual
+
 1. **Clonar el repositorio o navegar al directorio**:
 ```bash
 cd sistema-cursos
