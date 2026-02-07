@@ -1,44 +1,80 @@
+# Dockerfile Unificado - Sistema de Cursos Laravel con MySQL
 FROM php:8.2-cli
 
+# Variables de entorno
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PORT=8000
+
 # Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libzip-dev \
     zip \
     unzip \
-    libzip-dev \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instalar extensiones PHP para MySQL
+RUN docker-php-ext-install -j$(nproc) \
+    pdo \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Instalar Node.js para compilar assets
+# Instalar Node.js 18.x desde NodeSource
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Establecer directorio de trabajo
-WORKDIR /app
+WORKDIR /var/www/html
 
-# Copiar archivos de la aplicación
+# Copiar archivos del proyecto
 COPY . .
 
-# Instalar dependencias de PHP
-RUN composer install --no-dev --optimize-autoloader --no-interaction \
-    && composer dump-autoload --optimize
+# Instalar dependencias PHP
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Instalar dependencias de Node y compilar assets
-RUN npm ci && npm run build
+# Regenerar autoloader para asegurar que todas las clases estén disponibles
+RUN composer dump-autoload --optimize --no-interaction || true
+
+# Instalar dependencias Node (si existe package.json)
+RUN if [ -f "package.json" ]; then npm ci; fi
+
+# Compilar assets (si existe package.json)
+RUN if [ -f "package.json" ]; then npm run build; fi
 
 # Configurar permisos
-RUN chmod -R 755 storage bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html \
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
 
-# Exponer puerto (Railway usa $PORT dinámicamente)
-EXPOSE $PORT
+# Copiar y dar permisos al script de inicio
+RUN chmod +x /var/www/html/start.sh || true
 
-# Comando de inicio para Railway
-CMD php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan serve --host=0.0.0.0 --port=$PORT
+# Limpiar cachés y optimizaciones (ejecutado durante el build)
+RUN php artisan optimize:clear || true
+RUN php artisan config:clear || true
 
+# Regenerar autoloader una vez más después de limpiar cachés
+RUN composer dump-autoload --optimize --no-interaction || true
+
+# Exponer puerto (Render/Railway usan $PORT)
+EXPOSE ${PORT:-8000}
+
+# Comando para iniciar Laravel usando el script mejorado
+# Nota: migrate --force se ejecuta en start.sh porque necesita la base de datos en runtime
+CMD ["/var/www/html/start.sh"]
