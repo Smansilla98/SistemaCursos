@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.2-cli
 
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
@@ -16,22 +16,29 @@ RUN apt-get update && apt-get install -y \
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Instalar Node.js para compilar assets
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
 # Establecer directorio de trabajo
-WORKDIR /var/www/html
+WORKDIR /app
 
 # Copiar archivos de la aplicación
-COPY . /var/www/html
+COPY . .
 
 # Instalar dependencias de PHP
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN composer install --no-dev --optimize-autoloader --no-interaction \
+    && composer dump-autoload --optimize
+
+# Instalar dependencias de Node y compilar assets
+RUN npm ci && npm run build
 
 # Configurar permisos
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+RUN chmod -R 755 storage bootstrap/cache
 
-# Exponer puerto
-EXPOSE 9000
+# Exponer puerto (Railway usa $PORT dinámicamente)
+EXPOSE $PORT
 
-CMD ["php-fpm"]
+# Comando de inicio para Railway
+CMD php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan serve --host=0.0.0.0 --port=$PORT
 
