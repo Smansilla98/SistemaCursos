@@ -12,15 +12,13 @@ class CourseController extends Controller
     {
         $user = auth()->user();
         
-        // Cursos del alumno
+        // Cursos del estudiante
         $myCourses = $user->courses()
-            ->wherePivot('is_unlocked', true)
-            ->with('category')
+            ->where('is_active', true)
             ->get();
 
-        // Todos los cursos disponibles
+        // Todos los cursos disponibles (que no tiene)
         $availableCourses = Course::where('is_active', true)
-            ->with('category')
             ->whereDoesntHave('users', function($query) use ($user) {
                 $query->where('users.id', $user->id);
             })
@@ -32,13 +30,9 @@ class CourseController extends Controller
     public function show(Course $course)
     {
         $user = auth()->user();
-        $hasAccess = $user->hasAccessToCourse($course->id);
+        $hasAccess = $user->courses()->where('courses.id', $course->id)->exists();
         
-        $course->load(['modules.files', 'files', 'category', 'teacher']);
-
-        if ($hasAccess) {
-            return view('student.courses.show', compact('course', 'hasAccess'));
-        }
+        $course->load('lessons');
 
         return view('student.courses.show', compact('course', 'hasAccess'));
     }

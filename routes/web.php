@@ -5,16 +5,12 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
-use App\Http\Controllers\Admin\AccessKeyController as AdminAccessKeyController;
 use App\Http\Controllers\Student\CourseController as StudentCourseController;
-use App\Http\Controllers\Student\PaymentController as StudentPaymentController;
-use App\Http\Controllers\Student\AccessKeyController as StudentAccessKeyController;
 use Illuminate\Support\Facades\Route;
 
 // Rutas públicas
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/curso/{slug}', [HomeController::class, 'showCourse'])->name('course.show');
+Route::get('/curso/{course}', [HomeController::class, 'showCourse'])->name('course.show');
 
 // Rutas de autenticación
 require __DIR__.'/auth.php';
@@ -23,8 +19,6 @@ require __DIR__.'/auth.php';
 Route::get('/dashboard', function () {
     if (auth()->user()->hasRole('admin')) {
         return redirect()->route('admin.dashboard');
-    } elseif (auth()->user()->hasRole('profesor')) {
-        return redirect()->route('teacher.courses.index');
     } else {
         return redirect()->route('student.courses.index');
     }
@@ -41,22 +35,22 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
     Route::resource('courses', AdminCourseController::class);
+    Route::post('/courses/{course}/lessons', [AdminCourseController::class, 'addLesson'])->name('courses.lessons.add');
+    Route::delete('/lessons/{lesson}', [AdminCourseController::class, 'deleteLesson'])->name('lessons.delete');
     Route::resource('users', AdminUserController::class);
-    Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
-    Route::post('/payments/{payment}/approve', [AdminPaymentController::class, 'approve'])->name('payments.approve');
-    Route::post('/payments/{payment}/reject', [AdminPaymentController::class, 'reject'])->name('payments.reject');
-    Route::resource('access-keys', AdminAccessKeyController::class);
+    Route::get('/purchases', [\App\Http\Controllers\Admin\PurchaseController::class, 'index'])->name('purchases.index');
+    Route::post('/purchases/{purchase}/approve', [\App\Http\Controllers\Admin\PurchaseController::class, 'approve'])->name('purchases.approve');
+    Route::post('/purchases/{purchase}/reject', [\App\Http\Controllers\Admin\PurchaseController::class, 'reject'])->name('purchases.reject');
 });
 
-// Rutas protegidas - Alumno
-Route::middleware(['auth', 'role:alumno'])->prefix('student')->name('student.')->group(function () {
+// Rutas protegidas - Student
+Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/courses', [StudentCourseController::class, 'index'])->name('courses.index');
     Route::get('/courses/{course}', [StudentCourseController::class, 'show'])->name('courses.show');
-    Route::post('/courses/{course}/purchase', [StudentPaymentController::class, 'create'])->name('courses.purchase');
-    Route::post('/access-keys/validate', [StudentAccessKeyController::class, 'validate'])->name('access-keys.validate');
-    Route::get('/payments/success', [StudentPaymentController::class, 'success'])->name('payments.success');
-    Route::get('/payments/failure', [StudentPaymentController::class, 'failure'])->name('payments.failure');
-    Route::get('/payments/pending', [StudentPaymentController::class, 'pending'])->name('payments.pending');
+    Route::post('/courses/{course}/purchase', [\App\Http\Controllers\Student\PurchaseController::class, 'create'])->name('courses.purchase');
+    Route::get('/purchases/success', [\App\Http\Controllers\Student\PurchaseController::class, 'success'])->name('purchases.success');
+    Route::get('/purchases/failure', [\App\Http\Controllers\Student\PurchaseController::class, 'failure'])->name('purchases.failure');
+    Route::get('/purchases/pending', [\App\Http\Controllers\Student\PurchaseController::class, 'pending'])->name('purchases.pending');
 });
 
 // Rutas de API para webhooks (sin autenticación)

@@ -21,10 +21,6 @@
                             <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">
                                 {{ __('Admin') }}
                             </x-nav-link>
-                        @elseif(auth()->user()->hasRole('profesor'))
-                            <x-nav-link :href="route('teacher.courses.index')" :active="request()->routeIs('teacher.*')">
-                                {{ __('Mis Cursos') }}
-                            </x-nav-link>
                         @else
                             <x-nav-link :href="route('student.courses.index')" :active="request()->routeIs('student.*')">
                                 {{ __('Mis Cursos') }}
@@ -91,10 +87,6 @@
                 @if(auth()->user()->hasRole('admin'))
                     <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">
                         {{ __('Admin') }}
-                    </x-responsive-nav-link>
-                @elseif(auth()->user()->hasRole('profesor'))
-                    <x-responsive-nav-link :href="route('teacher.courses.index')" :active="request()->routeIs('teacher.*')">
-                        {{ __('Mis Cursos') }}
                     </x-responsive-nav-link>
                 @else
                     <x-responsive-nav-link :href="route('student.courses.index')" :active="request()->routeIs('student.*')">

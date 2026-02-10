@@ -3,32 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
-use App\Models\Category;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Course::where('is_active', true)
-            ->with('category');
+        $courses = Course::where('is_active', true)
+            ->latest()
+            ->paginate(12);
 
-        if ($request->has('category') && $request->category) {
-            $query->where('category_id', $request->category);
-        }
-
-        $courses = $query->orderBy('order')->paginate(12);
-        $categories = Category::where('is_active', true)->get();
-
-        return view('home', compact('courses', 'categories'));
+        return view('home', compact('courses'));
     }
 
-    public function showCourse($slug)
+    public function showCourse(Course $course)
     {
-        $course = Course::where('slug', $slug)
-            ->with(['category', 'teacher', 'modules'])
-            ->firstOrFail();
-
+        $course->load('lessons');
+        
         $hasAccess = auth()->check() && auth()->user()->hasAccessToCourse($course->id);
 
         return view('courses.show', compact('course', 'hasAccess'));

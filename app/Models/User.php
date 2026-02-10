@@ -73,9 +73,6 @@ class User extends Authenticatable
 
     public function hasAccessToCourse($courseId)
     {
-        return $this->courses()
-            ->where('courses.id', $courseId)
-            ->wherePivot('is_unlocked', true)
-            ->exists();
+        return $this->courses()->where('courses.id', $courseId)->exists();
     }
 }

@@ -50,8 +50,8 @@
                         </div>
                         <div class="ml-5 w-0 flex-1">
                             <dl>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Pagos Aprobados</dt>
-                                <dd class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ $stats['approved_payments'] }}</dd>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Compras Aprobadas</dt>
+                                <dd class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ $stats['approved_purchases'] }}</dd>
                             </dl>
                         </div>
                     </div>
@@ -66,48 +66,63 @@
                         </div>
                         <div class="ml-5 w-0 flex-1">
                             <dl>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Claves Usadas</dt>
-                                <dd class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ $stats['used_keys'] }}</dd>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Compras Pendientes</dt>
+                                <dd class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ $stats['pending_purchases'] }}</dd>
                             </dl>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Pagos Recientes -->
+            <!-- Compras Recientes -->
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mb-8">
                 <div class="p-6">
-                    <h3 class="text-lg font-semibold mb-4">Pagos Recientes</h3>
+                    <h3 class="text-lg font-semibold mb-4">Compras Recientes</h3>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead>
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Alumno</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Estudiante</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Curso</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Monto</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Estado</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Fecha</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                @forelse($recentPayments as $payment)
+                                @forelse($recentPurchases as $purchase)
                                 <tr>
-                                    <td class="px-4 py-3 text-sm">{{ $payment->user->name }}</td>
-                                    <td class="px-4 py-3 text-sm">{{ $payment->course->title }}</td>
-                                    <td class="px-4 py-3 text-sm">${{ number_format($payment->amount, 2) }}</td>
+                                    <td class="px-4 py-3 text-sm">{{ $purchase->user->name }}</td>
+                                    <td class="px-4 py-3 text-sm">{{ $purchase->course->title }}</td>
+                                    <td class="px-4 py-3 text-sm">${{ number_format($purchase->amount, 2) }}</td>
                                     <td class="px-4 py-3 text-sm">
                                         <span class="px-2 py-1 text-xs rounded-full 
-                                            {{ $payment->status === 'approved' ? 'bg-green-100 text-green-800' : 
-                                               ($payment->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                                               'bg-red-100 text-red-800') }}">
-                                            {{ ucfirst($payment->status) }}
+                                            {{ $purchase->status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                                               ($purchase->status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 
+                                               'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200') }}">
+                                            {{ ucfirst($purchase->status) }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3 text-sm">{{ $payment->created_at->format('d/m/Y') }}</td>
+                                    <td class="px-4 py-3 text-sm">{{ $purchase->created_at->format('d/m/Y') }}</td>
+                                    <td class="px-4 py-3 text-sm">
+                                        @if($purchase->status === 'pending')
+                                        <div class="flex gap-2">
+                                            <form action="{{ route('admin.purchases.approve', $purchase) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="text-green-600 hover:text-green-800">Aprobar</button>
+                                            </form>
+                                            <form action="{{ route('admin.purchases.reject', $purchase) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="text-red-600 hover:text-red-800">Rechazar</button>
+                                            </form>
+                                        </div>
+                                        @endif
+                                    </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="px-4 py-3 text-sm text-center text-gray-500">No hay pagos recientes</td>
+                                    <td colspan="6" class="px-4 py-3 text-sm text-center text-gray-500">No hay compras recientes</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -125,7 +140,7 @@
                         <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                             <div>
                                 <h4 class="font-semibold">{{ $course->title }}</h4>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $course->category->name ?? 'Sin categoría' }}</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">${{ number_format($course->price, 2) }}</p>
                             </div>
                             <a href="{{ route('admin.courses.show', $course) }}" 
                                class="text-blue-500 hover:text-blue-600">Ver</a>

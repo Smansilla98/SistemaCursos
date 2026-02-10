@@ -10,23 +10,27 @@
             <!-- Mis Cursos -->
             @if($myCourses->count() > 0)
             <div class="mb-8">
-                <h3 class="text-xl font-semibold mb-4">Cursos Desbloqueados</h3>
+                <h3 class="text-xl font-semibold mb-4">Mis Cursos Comprados</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($myCourses as $course)
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        @if($course->cover_image)
-                        <img src="{{ asset('storage/' . $course->cover_image) }}" 
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg hover:shadow-lg transition-shadow">
+                        @if($course->thumbnail)
+                        <img src="{{ asset('storage/' . $course->thumbnail) }}" 
                              alt="{{ $course->title }}" 
                              class="w-full h-48 object-cover">
+                        @else
+                        <div class="w-full h-48 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                            <span class="text-white text-2xl font-bold">{{ substr($course->title, 0, 2) }}</span>
+                        </div>
                         @endif
                         <div class="p-6">
                             <h4 class="text-lg font-semibold mb-2">{{ $course->title }}</h4>
-                            <p class="text-gray-600 dark:text-gray-400 mb-4">
-                                {{ Str::limit($course->short_description ?? $course->description, 100) }}
+                            <p class="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                                {{ Str::limit($course->description, 100) }}
                             </p>
                             <a href="{{ route('student.courses.show', $course) }}" 
-                               class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg inline-block">
-                                Continuar
+                               class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg inline-block w-full text-center">
+                                Continuar Aprendiendo
                             </a>
                         </div>
                     </div>
@@ -41,16 +45,20 @@
                 @if($availableCourses->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($availableCourses as $course)
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        @if($course->cover_image)
-                        <img src="{{ asset('storage/' . $course->cover_image) }}" 
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg hover:shadow-lg transition-shadow">
+                        @if($course->thumbnail)
+                        <img src="{{ asset('storage/' . $course->thumbnail) }}" 
                              alt="{{ $course->title }}" 
                              class="w-full h-48 object-cover">
+                        @else
+                        <div class="w-full h-48 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                            <span class="text-white text-2xl font-bold">{{ substr($course->title, 0, 2) }}</span>
+                        </div>
                         @endif
                         <div class="p-6">
                             <h4 class="text-lg font-semibold mb-2">{{ $course->title }}</h4>
-                            <p class="text-gray-600 dark:text-gray-400 mb-4">
-                                {{ Str::limit($course->short_description ?? $course->description, 100) }}
+                            <p class="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                                {{ Str::limit($course->description, 100) }}
                             </p>
                             <div class="flex items-center justify-between">
                                 <span class="text-xl font-bold text-blue-600 dark:text-blue-400">
@@ -72,4 +80,3 @@
         </div>
     </div>
 </x-app-layout>
-

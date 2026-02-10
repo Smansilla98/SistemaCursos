@@ -23,5 +23,16 @@ class AdminUserSeeder extends Seeder
         );
 
         $admin->assignRole('admin');
+
+        // Crear usuario estudiante de ejemplo
+        $student = User::firstOrCreate(
+            ['email' => 'student@cursos.com'],
+            [
+                'name' => 'Estudiante Ejemplo',
+                'password' => Hash::make('password'),
+            ]
+        );
+
+        $student->assignRole('student');
     }
 }

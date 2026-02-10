@@ -43,12 +43,23 @@ class MercadoPagoWebhookController extends Controller
                 return response()->json(['error' => 'Pago no encontrado'], 404);
             }
 
-            // Buscar la compra en nuestra base de datos
-            $purchase = Purchase::where('payment_id', $paymentId)->first();
+            // Buscar la compra por external_reference (ID de la compra) o payment_id
+            $externalReference = $payment->external_reference ?? null;
+            
+            if ($externalReference) {
+                $purchase = Purchase::find($externalReference);
+            } else {
+                $purchase = Purchase::where('payment_id', $paymentId)->first();
+            }
 
             if (!$purchase) {
-                Log::warning("MercadoPago: Compra no encontrada para payment_id: {$paymentId}");
+                Log::warning("MercadoPago: Compra no encontrada para payment_id: {$paymentId}, external_reference: {$externalReference}");
                 return response()->json(['error' => 'Compra no encontrada'], 404);
+            }
+
+            // Actualizar el payment_id si no estaba guardado
+            if (!$purchase->payment_id) {
+                $purchase->update(['payment_id' => $paymentId]);
             }
 
             // Actualizar el estado de la compra según el estado de MercadoPago

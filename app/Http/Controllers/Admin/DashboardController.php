@@ -5,8 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\User;
-use App\Models\Payment;
-use App\Models\AccessKey;
+use App\Models\Purchase;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -16,22 +15,20 @@ class DashboardController extends Controller
         $stats = [
             'total_courses' => Course::count(),
             'active_courses' => Course::where('is_active', true)->count(),
-            'total_students' => User::role('alumno')->count(),
-            'total_teachers' => User::role('profesor')->count(),
-            'total_payments' => Payment::count(),
-            'pending_payments' => Payment::where('status', 'pending')->count(),
-            'approved_payments' => Payment::where('status', 'approved')->count(),
-            'total_keys' => AccessKey::count(),
-            'used_keys' => AccessKey::where('is_used', true)->count(),
+            'total_students' => User::role('student')->count(),
+            'total_purchases' => Purchase::count(),
+            'pending_purchases' => Purchase::where('status', 'pending')->count(),
+            'approved_purchases' => Purchase::where('status', 'approved')->count(),
+            'rejected_purchases' => Purchase::where('status', 'rejected')->count(),
         ];
 
-        $recentPayments = Payment::with(['user', 'course'])
+        $recentPurchases = Purchase::with(['user', 'course'])
             ->latest()
             ->take(10)
             ->get();
 
         $recentCourses = Course::latest()->take(5)->get();
 
-        return view('admin.dashboard', compact('stats', 'recentPayments', 'recentCourses'));
+        return view('admin.dashboard', compact('stats', 'recentPurchases', 'recentCourses'));
     }
 }

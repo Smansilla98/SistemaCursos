@@ -4,25 +4,21 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
-use App\Models\Category;
-use App\Models\User;
+use App\Models\Lesson;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
 {
     public function index()
     {
-        $courses = Course::with(['category', 'teacher'])->latest()->paginate(15);
+        $courses = Course::latest()->paginate(15);
         return view('admin.courses.index', compact('courses'));
     }
 
     public function create()
     {
-        $categories = Category::where('is_active', true)->get();
-        $teachers = User::role('profesor')->get();
-        return view('admin.courses.create', compact('categories', 'teachers'));
+        return view('admin.courses.create');
     }
 
     public function store(Request $request)
@@ -30,38 +26,30 @@ class CourseController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'short_description' => 'nullable|string|max:500',
-            'category_id' => 'required|exists:categories,id',
-            'teacher_id' => 'nullable|exists:users,id',
             'price' => 'required|numeric|min:0',
-            'cover_image' => 'nullable|image|max:2048',
+            'thumbnail' => 'nullable|image|max:2048',
             'is_active' => 'boolean',
-            'requires_payment' => 'boolean',
         ]);
-
-        $validated['slug'] = Str::slug($validated['title']);
         
-        if ($request->hasFile('cover_image')) {
-            $validated['cover_image'] = $request->file('cover_image')->store('courses', 'public');
+        if ($request->hasFile('thumbnail')) {
+            $validated['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
         }
 
-        Course::create($validated);
+        $course = Course::create($validated);
 
-        return redirect()->route('admin.courses.index')
+        return redirect()->route('admin.courses.show', $course)
             ->with('success', 'Curso creado exitosamente');
     }
 
     public function show(Course $course)
     {
-        $course->load(['category', 'teacher', 'modules.files', 'files']);
+        $course->load('lessons');
         return view('admin.courses.show', compact('course'));
     }
 
     public function edit(Course $course)
     {
-        $categories = Category::where('is_active', true)->get();
-        $teachers = User::role('profesor')->get();
-        return view('admin.courses.edit', compact('course', 'categories', 'teachers'));
+        return view('admin.courses.edit', compact('course'));
     }
 
     public function update(Request $request, Course $course)
@@ -69,22 +57,16 @@ class CourseController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'short_description' => 'nullable|string|max:500',
-            'category_id' => 'required|exists:categories,id',
-            'teacher_id' => 'nullable|exists:users,id',
             'price' => 'required|numeric|min:0',
-            'cover_image' => 'nullable|image|max:2048',
+            'thumbnail' => 'nullable|image|max:2048',
             'is_active' => 'boolean',
-            'requires_payment' => 'boolean',
         ]);
 
-        $validated['slug'] = Str::slug($validated['title']);
-
-        if ($request->hasFile('cover_image')) {
-            if ($course->cover_image) {
-                Storage::disk('public')->delete($course->cover_image);
+        if ($request->hasFile('thumbnail')) {
+            if ($course->thumbnail) {
+                Storage::disk('public')->delete($course->thumbnail);
             }
-            $validated['cover_image'] = $request->file('cover_image')->store('courses', 'public');
+            $validated['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
         }
 
         $course->update($validated);
@@ -95,12 +77,51 @@ class CourseController extends Controller
 
     public function destroy(Course $course)
     {
-        if ($course->cover_image) {
-            Storage::disk('public')->delete($course->cover_image);
+        if ($course->thumbnail) {
+            Storage::disk('public')->delete($course->thumbnail);
         }
         $course->delete();
 
         return redirect()->route('admin.courses.index')
             ->with('success', 'Curso eliminado exitosamente');
+    }
+
+    // Gestión de lecciones
+    public function addLesson(Request $request, Course $course)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'order' => 'required|integer|min:0',
+            'file_type' => 'required|in:video,pdf',
+            'file' => 'required|file|max:102400', // 100MB máximo
+        ]);
+
+        $filePath = $request->file('file')->store('lessons', 'public');
+        
+        Lesson::create([
+            'course_id' => $course->id,
+            'title' => $validated['title'],
+            'order' => $validated['order'],
+            'file_type' => $validated['file_type'],
+            'file_path' => $filePath,
+            'is_locked' => true,
+        ]);
+
+        return redirect()->route('admin.courses.show', $course)
+            ->with('success', 'Lección agregada exitosamente');
+    }
+
+    public function deleteLesson(Lesson $lesson)
+    {
+        $course = $lesson->course;
+        
+        if ($lesson->file_path) {
+            Storage::disk('public')->delete($lesson->file_path);
+        }
+        
+        $lesson->delete();
+
+        return redirect()->route('admin.courses.show', $course)
+            ->with('success', 'Lección eliminada exitosamente');
     }
 }
