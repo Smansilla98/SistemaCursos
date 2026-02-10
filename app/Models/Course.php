@@ -11,59 +11,30 @@ class Course extends Model
 {
     protected $fillable = [
         'title',
-        'slug',
         'description',
-        'short_description',
-        'cover_image',
-        'category_id',
-        'teacher_id',
         'price',
+        'thumbnail',
         'is_active',
-        'requires_payment',
-        'order',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
         'is_active' => 'boolean',
-        'requires_payment' => 'boolean',
-        'order' => 'integer',
     ];
 
-    public function category(): BelongsTo
+    public function lessons(): HasMany
     {
-        return $this->belongsTo(Category::class);
-    }
-
-    public function teacher(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'teacher_id');
-    }
-
-    public function modules(): HasMany
-    {
-        return $this->hasMany(Module::class)->orderBy('order');
-    }
-
-    public function files(): HasMany
-    {
-        return $this->hasMany(CourseFile::class)->orderBy('order');
+        return $this->hasMany(Lesson::class)->orderBy('order');
     }
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class)
-            ->withPivot('access_type', 'is_unlocked', 'unlocked_at', 'payment_id', 'access_key_id', 'progress')
+        return $this->belongsToMany(User::class, 'course_user')
             ->withTimestamps();
     }
 
-    public function payments(): HasMany
+    public function purchases(): HasMany
     {
-        return $this->hasMany(Payment::class);
-    }
-
-    public function accessKeys(): HasMany
-    {
-        return $this->hasMany(AccessKey::class);
+        return $this->hasMany(Purchase::class);
     }
 }

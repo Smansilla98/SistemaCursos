@@ -55,19 +55,9 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    public function payments()
+    public function purchases()
     {
-        return $this->hasMany(Payment::class);
-    }
-
-    public function accessKeys()
-    {
-        return $this->hasMany(AccessKey::class);
-    }
-
-    public function taughtCourses()
-    {
-        return $this->hasMany(Course::class, 'teacher_id');
+        return $this->hasMany(Purchase::class);
     }
 
     // Helpers
@@ -76,14 +66,9 @@ class User extends Authenticatable
         return $this->hasRole('admin');
     }
 
-    public function isTeacher()
-    {
-        return $this->hasRole('profesor');
-    }
-
     public function isStudent()
     {
-        return $this->hasRole('alumno');
+        return $this->hasRole('student');
     }
 
     public function hasAccessToCourse($courseId)

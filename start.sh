@@ -1,38 +1,95 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
-echo "🚀 Iniciando Sistema de Gestión de Cursos..."
+echo "=========================================="
+echo "=== Iniciando Sistema de Cursos ==="
+echo "=========================================="
 
-# Esperar a que la base de datos esté lista (opcional, Railway lo maneja automáticamente)
-echo "⏳ Verificando conexión a base de datos..."
+# Mostrar variables básicas (sin secretos)
+echo "=== Variables de Entorno ==="
+echo "APP_ENV: ${APP_ENV:-no configurado}"
+echo "DB_CONNECTION: ${DB_CONNECTION:-no configurado}"
+echo "DB_HOST: ${DB_HOST:-no configurado}"
+echo "DB_DATABASE: ${DB_DATABASE:-no configurado}"
+echo "DB_USERNAME: ${DB_USERNAME:-no configurado}"
+echo ""
 
-# Limpiar cachés antes de iniciar
-echo "🧹 Limpiando cachés..."
-php artisan config:clear || true
-php artisan cache:clear || true
-php artisan route:clear || true
-php artisan view:clear || true
+# Esperar DB (solo verificación, NO migraciones)
+echo "=== Esperando base de datos ==="
+for i in $(seq 1 30); do
+    if php -r "
+        try {
+            new PDO(
+                'mysql:host='.(getenv('DB_HOST') ?: '127.0.0.1').
+                ';port='.(getenv('DB_PORT') ?: '3306').
+                ';dbname='.(getenv('DB_DATABASE') ?: ''),
+                getenv('DB_USERNAME') ?: 'root',
+                getenv('DB_PASSWORD') ?: '',
+                [PDO::ATTR_TIMEOUT => 2]
+            );
+            exit(0);
+        } catch (Exception \$e) {
+            exit(1);
+        }
+    " 2>/dev/null; then
+        echo "✓ Base de datos disponible"
+        break
+    fi
+    echo "Intento $i/30..."
+    sleep 2
+done
 
-# Optimizar para producción
-echo "⚡ Optimizando aplicación..."
-php artisan config:cache || true
-php artisan route:cache || true
-php artisan view:cache || true
+# Limpieza segura
+echo "=== Limpiando cachés ==="
+php artisan optimize:clear || true
 
-# Ejecutar migraciones (solo si no se han ejecutado)
-echo "🗄️  Verificando migraciones..."
-php artisan migrate --force || echo "⚠️  Error en migraciones, continuando..."
+# Verificar si la base de datos tiene tablas
+echo "=== Verificando estado de la base de datos ==="
+DB_HAS_TABLES=$(php -r "
+try {
+    \$pdo = new PDO(
+        'mysql:host='.(getenv('DB_HOST') ?: '127.0.0.1').
+        ';port='.(getenv('DB_PORT') ?: '3306').
+        ';dbname='.(getenv('DB_DATABASE') ?: ''),
+        getenv('DB_USERNAME') ?: 'root',
+        getenv('DB_PASSWORD') ?: ''
+    );
+    \$stmt = \$pdo->query('SHOW TABLES');
+    \$tables = \$stmt->fetchAll(PDO::FETCH_COLUMN);
+    echo count(\$tables) > 0 ? 'yes' : 'no';
+} catch (Exception \$e) {
+    echo 'no';
+}
+" 2>/dev/null || echo "no")
 
-# Crear enlace simbólico de storage si no existe
-echo "🔗 Verificando enlace de storage..."
-php artisan storage:link || echo "⚠️  Enlace de storage ya existe o error, continuando..."
+if [ "$DB_HAS_TABLES" = "yes" ]; then
+    echo "✓ Base de datos tiene tablas existentes"
+    echo "=== Ejecutando migraciones (modo seguro) ==="
+    php artisan migrate --force --no-interaction || {
+        echo "⚠️  ADVERTENCIA: Las migraciones fallaron. Verificá los logs."
+        echo "   El sistema puede funcionar con funcionalidad limitada."
+    }
+else
+    echo "Base de datos vacía"
+    echo "=== Ejecutando migraciones iniciales ==="
+    php artisan migrate --force --no-interaction || {
+        echo "⚠️  ADVERTENCIA: Las migraciones fallaron. Verificá los logs."
+    }
+fi
 
-# Obtener el puerto de la variable de entorno o usar 8000 por defecto
-PORT=${PORT:-8000}
+# Regenerar autoloader de Composer (por si hay cambios en clases)
+composer dump-autoload --no-interaction --optimize || true
 
-echo "✅ Iniciando servidor Laravel en puerto $PORT..."
-echo "🌐 La aplicación estará disponible en http://0.0.0.0:$PORT"
+# Storage
+echo "=== Verificando storage ==="
+php artisan storage:link || true
 
-# Iniciar el servidor de Laravel
-exec php artisan serve --host=0.0.0.0 --port=$PORT
+echo ""
+echo "=========================================="
+echo "=== Servidor iniciado ==="
+echo "Host: 0.0.0.0"
+echo "Port: ${PORT:-8000}"
+echo "=========================================="
+echo ""
 
+exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}

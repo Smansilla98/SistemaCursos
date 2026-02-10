@@ -59,8 +59,8 @@ Route::middleware(['auth', 'role:alumno'])->prefix('student')->name('student.')-
     Route::get('/payments/pending', [StudentPaymentController::class, 'pending'])->name('payments.pending');
 });
 
-// Rutas protegidas - Profesor
-Route::middleware(['auth', 'role:profesor'])->prefix('teacher')->name('teacher.')->group(function () {
-    Route::get('/courses', [\App\Http\Controllers\Teacher\CourseController::class, 'index'])->name('courses.index');
-    Route::get('/courses/{course}', [\App\Http\Controllers\Teacher\CourseController::class, 'show'])->name('courses.show');
+// Rutas de API para webhooks (sin autenticación)
+Route::prefix('api')->group(function () {
+    Route::post('/mercadopago/webhook', [\App\Http\Controllers\Api\MercadoPagoWebhookController::class, 'handle'])
+        ->name('api.mercadopago.webhook');
 });
