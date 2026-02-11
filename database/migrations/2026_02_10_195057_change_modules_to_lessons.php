@@ -26,14 +26,20 @@ return new class extends Migration
         // Migrar datos de course_files a lessons si existen
         // Esto se hace en caso de que haya datos existentes
         if (Schema::hasTable('course_files')) {
-            DB::statement("
-                UPDATE lessons l
-                INNER JOIN course_files cf ON cf.module_id = l.id
-                SET l.file_type = cf.file_type,
-                    l.file_path = cf.file_path,
-                    l.is_locked = cf.is_locked
-                WHERE cf.module_id IS NOT NULL
-            ");
+            // Usar sintaxis compatible con MySQL
+            $courseFiles = DB::table('course_files')
+                ->whereNotNull('module_id')
+                ->get();
+            
+            foreach ($courseFiles as $file) {
+                DB::table('lessons')
+                    ->where('id', $file->module_id)
+                    ->update([
+                        'file_type' => $file->file_type,
+                        'file_path' => $file->file_path,
+                        'is_locked' => $file->is_locked,
+                    ]);
+            }
         }
         
         // Eliminar tabla course_files (ya no se necesita)
