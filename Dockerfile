@@ -1,4 +1,4 @@
-# Dockerfile Unificado - Sistema de Cursos Laravel con MySQL
+# Dockerfile Unificado - Laravel con MySQL
 FROM php:8.2-cli
 
 # Variables de entorno
