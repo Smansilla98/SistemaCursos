@@ -47,12 +47,10 @@ class User extends Authenticatable
         ];
     }
 
-    // Relaciones
+    // Relaciones (pivot course_user simplificado: course_id, user_id, timestamps)
     public function courses()
     {
-        return $this->belongsToMany(Course::class)
-            ->withPivot('access_type', 'is_unlocked', 'unlocked_at', 'payment_id', 'access_key_id', 'progress')
-            ->withTimestamps();
+        return $this->belongsToMany(Course::class, 'course_user')->withTimestamps();
     }
 
     public function purchases()
