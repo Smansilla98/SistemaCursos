@@ -11,8 +11,18 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <!-- Assets: Vite (build) o fallback CDN si no hay manifest en producción -->
+        @if(file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+            @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @else
+            <script src="https://cdn.tailwindcss.com"></script>
+            <script>
+                tailwind.config = {
+                    theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+                }
+            </script>
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+        @endif
     </head>
     <body class="font-sans antialiased bg-slate-50">
         <div class="min-h-screen bg-slate-50">
