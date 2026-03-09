@@ -1,122 +1,87 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ $course->title }}
-        </h2>
+        <h1 class="text-2xl font-bold text-slate-800 tracking-tight">{{ $course->title }}</h1>
+        <p class="mt-1 text-sm text-slate-500">Contenido del curso</p>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             @if(!$hasAccess)
-            <!-- Sin acceso - Opción de compra -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <h3 class="text-xl font-semibold mb-4">Acceso al Curso</h3>
-                    
-                    <div class="mb-6">
-                        <p class="mb-4 text-lg">
-                            Precio: <span class="text-3xl font-bold text-blue-600 dark:text-blue-400">${{ number_format($course->price, 2) }}</span>
-                        </p>
-                        <form action="{{ route('student.courses.purchase', $course) }}" method="POST" class="inline">
-                            @csrf
-                            <button type="submit" 
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg">
-                                Comprar con MercadoPago
-                            </button>
-                        </form>
-                    </div>
-
-                    <div class="border-t pt-6">
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                            Al comprar este curso, obtendrás acceso inmediato a todo el contenido una vez que el pago sea aprobado.
-                        </p>
-                    </div>
+            <div class="card-nova p-6">
+                <h2 class="text-xl font-semibold text-slate-800 mb-4">Acceso al curso</h2>
+                <div class="mb-6">
+                    <p class="mb-4">
+                        Precio: <span class="text-3xl font-bold text-indigo-600">${{ number_format($course->price, 2) }}</span>
+                    </p>
+                    <form action="{{ route('student.courses.purchase', $course) }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="btn-nova text-base px-8 py-3">Comprar con MercadoPago</button>
+                    </form>
+                </div>
+                <div class="border-t border-slate-200 pt-6">
+                    <p class="text-sm text-slate-600">Al comprar, tendrás acceso a todo el contenido una vez aprobado el pago.</p>
                 </div>
             </div>
             @endif
 
-            <!-- Información del Curso -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            @if($course->thumbnail)
-                            <img src="{{ asset('storage/' . $course->thumbnail) }}" 
-                                 alt="{{ $course->title }}" 
-                                 class="w-full h-64 object-cover rounded-lg">
-                            @endif
+            <div class="card-nova p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        @if($course->thumbnail)
+                        <img src="{{ asset('storage/' . $course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-64 object-cover rounded-xl">
+                        @else
+                        <div class="w-full h-64 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center">
+                            <span class="text-white text-4xl font-bold">{{ substr($course->title, 0, 2) }}</span>
                         </div>
-                        <div>
-                            <h1 class="text-3xl font-bold mb-4">{{ $course->title }}</h1>
-                            <p class="text-gray-700 dark:text-gray-300 whitespace-pre-line mb-4">{{ $course->description }}</p>
-                            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-4">
-                                ${{ number_format($course->price, 2) }}
-                            </p>
-                        </div>
+                        @endif
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-4">{{ $course->title }}</h2>
+                        <p class="text-slate-600 whitespace-pre-line mb-4">{{ $course->description }}</p>
+                        <p class="text-2xl font-bold text-indigo-600">${{ number_format($course->price, 2) }}</p>
                     </div>
                 </div>
             </div>
 
             @if($hasAccess)
-            <!-- Lecciones del Curso -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <h3 class="text-xl font-semibold mb-4">Contenido del Curso</h3>
-                    
+            <div class="card-nova overflow-hidden">
+                <div class="p-6 border-b border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-800">Contenido del curso</h3>
+                </div>
+                <div class="divide-y divide-slate-200">
                     @forelse($course->lessons()->orderBy('order')->get() as $lesson)
-                    <div class="mb-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4">
-                                <span class="text-gray-500 font-semibold">#{{ $lesson->order }}</span>
-                                <div>
-                                    <h4 class="font-semibold">{{ $lesson->title }}</h4>
-                                    <p class="text-sm text-gray-500">
-                                        Tipo: {{ $lesson->file_type === 'video' ? 'Video' : 'PDF' }}
-                                    </p>
-                                </div>
-                            </div>
+                    <div class="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <span class="text-slate-500 font-semibold">#{{ $lesson->order }}</span>
                             <div>
-                                @if($lesson->isVideo())
-                                <a href="{{ asset('storage/' . $lesson->file_path) }}" 
-                                   target="_blank"
-                                   class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg inline-flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
-                                    </svg>
-                                    Ver Video
-                                </a>
-                                @else
-                                <a href="{{ asset('storage/' . $lesson->file_path) }}" 
-                                   target="_blank"
-                                   class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg inline-flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
-                                    </svg>
-                                    Ver PDF
-                                </a>
-                                @endif
+                                <h4 class="font-semibold text-slate-800">{{ $lesson->title }}</h4>
+                                <p class="text-sm text-slate-500">{{ $lesson->file_type === 'video' ? 'Video' : 'PDF' }}</p>
                             </div>
+                        </div>
+                        <div class="shrink-0">
+                            @if($lesson->isVideo())
+                            <a href="{{ asset('storage/' . $lesson->file_path) }}" target="_blank" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+                                Ver video
+                            </a>
+                            @else
+                            <a href="{{ asset('storage/' . $lesson->file_path) }}" target="_blank" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white bg-slate-700 hover:bg-slate-800">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
+                                Ver PDF
+                            </a>
+                            @endif
                         </div>
                     </div>
                     @empty
-                    <p class="text-gray-500 dark:text-gray-400 text-center py-8">
-                        Este curso aún no tiene contenido disponible.
-                    </p>
+                    <div class="p-12 text-center text-slate-500">Este curso aún no tiene contenido disponible.</div>
                     @endforelse
                 </div>
             </div>
             @else
-            <!-- Vista previa bloqueada -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <h3 class="text-xl font-semibold mb-4">Contenido del Curso</h3>
-                    <p class="text-gray-500 dark:text-gray-400 text-center py-8">
-                        Compra este curso para acceder a todo el contenido.
-                    </p>
-                    <p class="text-center text-sm text-gray-400">
-                        Este curso tiene {{ $course->lessons()->count() }} lecciones disponibles.
-                    </p>
-                </div>
+            <div class="card-nova p-6">
+                <h3 class="text-lg font-semibold text-slate-800 mb-2">Contenido del curso</h3>
+                <p class="text-slate-500 text-center py-6">Comprá este curso para acceder a todo el contenido.</p>
+                <p class="text-center text-sm text-slate-400">Este curso tiene {{ $course->lessons()->count() }} lecciones.</p>
             </div>
             @endif
         </div>

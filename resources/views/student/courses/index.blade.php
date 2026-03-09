@@ -1,82 +1,63 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Mis Cursos') }}
-        </h2>
+        <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Mis cursos</h1>
+        <p class="mt-1 text-sm text-slate-500">Cursos que tenés y cursos disponibles</p>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Mis Cursos -->
+    <div class="py-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
             @if($myCourses->count() > 0)
-            <div class="mb-8">
-                <h3 class="text-xl font-semibold mb-4">Mis Cursos Comprados</h3>
+            <section>
+                <h2 class="text-lg font-semibold text-slate-800 mb-4">Cursos comprados</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($myCourses as $course)
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg hover:shadow-lg transition-shadow">
+                    <article class="card-nova hover:shadow-nova-md transition-shadow">
                         @if($course->thumbnail)
-                        <img src="{{ asset('storage/' . $course->thumbnail) }}" 
-                             alt="{{ $course->title }}" 
-                             class="w-full h-48 object-cover">
+                        <img src="{{ asset('storage/' . $course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-48 object-cover rounded-t-xl">
                         @else
-                        <div class="w-full h-48 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                        <div class="w-full h-48 bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center rounded-t-xl">
                             <span class="text-white text-2xl font-bold">{{ substr($course->title, 0, 2) }}</span>
                         </div>
                         @endif
                         <div class="p-6">
-                            <h4 class="text-lg font-semibold mb-2">{{ $course->title }}</h4>
-                            <p class="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                                {{ Str::limit($course->description, 100) }}
-                            </p>
-                            <a href="{{ route('student.courses.show', $course) }}" 
-                               class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg inline-block w-full text-center">
-                                Continuar Aprendiendo
-                            </a>
+                            <h3 class="text-lg font-semibold text-slate-800 mb-2">{{ $course->title }}</h3>
+                            <p class="text-slate-600 text-sm mb-4 line-clamp-2">{{ Str::limit($course->description, 100) }}</p>
+                            <a href="{{ route('student.courses.show', $course) }}" class="btn-nova block w-full text-center">Continuar aprendiendo</a>
                         </div>
-                    </div>
+                    </article>
                     @endforeach
                 </div>
-            </div>
+            </section>
             @endif
 
-            <!-- Cursos Disponibles -->
-            <div>
-                <h3 class="text-xl font-semibold mb-4">Cursos Disponibles</h3>
+            <section>
+                <h2 class="text-lg font-semibold text-slate-800 mb-4">Cursos disponibles</h2>
                 @if($availableCourses->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($availableCourses as $course)
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg hover:shadow-lg transition-shadow">
+                    <article class="card-nova hover:shadow-nova-md transition-shadow">
                         @if($course->thumbnail)
-                        <img src="{{ asset('storage/' . $course->thumbnail) }}" 
-                             alt="{{ $course->title }}" 
-                             class="w-full h-48 object-cover">
+                        <img src="{{ asset('storage/' . $course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-48 object-cover rounded-t-xl">
                         @else
-                        <div class="w-full h-48 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                        <div class="w-full h-48 bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center rounded-t-xl">
                             <span class="text-white text-2xl font-bold">{{ substr($course->title, 0, 2) }}</span>
                         </div>
                         @endif
                         <div class="p-6">
-                            <h4 class="text-lg font-semibold mb-2">{{ $course->title }}</h4>
-                            <p class="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                                {{ Str::limit($course->description, 100) }}
-                            </p>
+                            <h3 class="text-lg font-semibold text-slate-800 mb-2">{{ $course->title }}</h3>
+                            <p class="text-slate-600 text-sm mb-4 line-clamp-2">{{ Str::limit($course->description, 100) }}</p>
                             <div class="flex items-center justify-between">
-                                <span class="text-xl font-bold text-blue-600 dark:text-blue-400">
-                                    ${{ number_format($course->price, 2) }}
-                                </span>
-                                <a href="{{ route('student.courses.show', $course) }}" 
-                                   class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-                                    Ver más
-                                </a>
+                                <span class="text-xl font-bold text-indigo-600">${{ number_format($course->price, 2) }}</span>
+                                <a href="{{ route('student.courses.show', $course) }}" class="btn-nova text-sm">Ver más</a>
                             </div>
                         </div>
-                    </div>
+                    </article>
                     @endforeach
                 </div>
                 @else
-                <p class="text-gray-500 dark:text-gray-400 text-center py-8">No hay cursos disponibles</p>
+                <p class="text-slate-500 text-center py-12">No hay más cursos disponibles por el momento.</p>
                 @endif
-            </div>
+            </section>
         </div>
     </div>
 </x-app-layout>

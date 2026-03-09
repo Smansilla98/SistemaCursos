@@ -1,55 +1,46 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Cursos Disponibles') }}
-        </h2>
+        <h1 class="text-2xl font-bold text-slate-800 tracking-tight">
+            {{ __('Cursos disponibles') }}
+        </h1>
+        <p class="mt-1 text-sm text-slate-500">Encontrá el curso que necesitás y empezá a aprender.</p>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Grid de cursos -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($courses as $course)
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg hover:shadow-lg transition-shadow">
+                <article class="card-nova hover:shadow-nova-md transition-shadow">
                     @if($course->thumbnail)
-                    <img src="{{ asset('storage/' . $course->thumbnail) }}" 
-                         alt="{{ $course->title }}" 
-                         class="w-full h-48 object-cover">
+                    <img src="{{ asset('storage/' . $course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-48 object-cover rounded-t-xl">
                     @else
-                    <div class="w-full h-48 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                        <span class="text-white text-lg font-semibold">{{ substr($course->title, 0, 2) }}</span>
+                    <div class="w-full h-48 bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center rounded-t-xl">
+                        <span class="text-white text-2xl font-bold">{{ substr($course->title, 0, 2) }}</span>
                     </div>
                     @endif
-                    
                     <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-2">{{ $course->title }}</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                            {{ Str::limit($course->description, 100) }}
-                        </p>
-                        
+                        <h2 class="text-lg font-semibold text-slate-800 mb-2">{{ $course->title }}</h2>
+                        <p class="text-slate-600 text-sm mb-4 line-clamp-2">{{ Str::limit($course->description, 100) }}</p>
                         <div class="flex items-center justify-between">
-                            <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                                ${{ number_format($course->price, 2) }}
-                            </span>
-                            <a href="{{ route('course.show', $course) }}" 
-                               class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            <span class="text-xl font-bold text-indigo-600">${{ number_format($course->price, 2) }}</span>
+                            <a href="{{ route('course.show', $course) }}" class="btn-nova text-sm">
                                 Ver más
                             </a>
                         </div>
                     </div>
-                </div>
+                </article>
                 @empty
-                <div class="col-span-full text-center py-12">
-                    <p class="text-gray-500 dark:text-gray-400">No hay cursos disponibles</p>
+                <div class="col-span-full text-center py-16">
+                    <p class="text-slate-500">No hay cursos disponibles por el momento.</p>
                 </div>
                 @endforelse
             </div>
 
-            <!-- Paginación -->
-            <div class="mt-6">
+            @if($courses->hasPages())
+            <div class="mt-8">
                 {{ $courses->links() }}
             </div>
+            @endif
         </div>
     </div>
 </x-app-layout>
-
