@@ -4,7 +4,6 @@ FROM php:8.2-cli
 # Variables de entorno
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PORT=8000
-ENV NODE_ENV=production
 
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -52,8 +51,8 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 RUN composer dump-autoload --optimize --no-interaction || true
 
 # --- Forzar compilación de estilos y assets (Vite/Tailwind - tema Nova) ---
-# Instalar deps Node (obligatorio si hay package.json)
-RUN if [ -f "package.json" ]; then (npm ci 2>/dev/null || npm install --legacy-peer-deps) && npm run build; fi
+# Con NODE_ENV=development se instalan devDependencies (vite, tailwind) para poder hacer npm run build
+RUN if [ -f "package.json" ]; then NODE_ENV=development npm install --legacy-peer-deps && npm run build; fi
 
 # Verificar que existan assets compilados cuando hay frontend (evita deploy sin estilos)
 RUN if [ -f "package.json" ] && [ ! -f "public/build/manifest.json" ]; then echo "ERROR: assets no generados. Revisar npm run build." && exit 1; fi
