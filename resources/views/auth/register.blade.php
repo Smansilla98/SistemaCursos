@@ -28,6 +28,16 @@
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
+        <div>
+            <x-input-label for="role" :value="__('Rol')" />
+            <select id="role" name="role" class="input-nova mt-1 block w-full rounded-lg border-slate-300 text-slate-800 focus:border-indigo-500 focus:ring-indigo-500" required>
+                <option value="student" {{ old('role') === 'student' ? 'selected' : '' }}>Alumno</option>
+                <option value="profesor" {{ old('role') === 'profesor' ? 'selected' : '' }}>Profesor</option>
+                <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Administrador</option>
+            </select>
+            <x-input-error :messages="$errors->get('role')" class="mt-2" />
+        </div>
+
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
             <a href="{{ route('login') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
                 ¿Ya tenés cuenta? Iniciar sesión

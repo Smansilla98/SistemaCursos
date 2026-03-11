@@ -20,7 +20,7 @@
                             </x-nav-link>
                         @else
                             <x-nav-link :href="route('student.courses.index')" :active="request()->routeIs('student.*')">
-                                {{ __('Mis Cursos') }}
+                                {{ auth()->user()->hasRole('profesor') ? __('Cursos') : __('Mis Cursos') }}
                             </x-nav-link>
                         @endif
                     @endauth
@@ -72,7 +72,7 @@
                 @if(auth()->user()->hasRole('admin'))
                     <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">{{ __('Admin') }}</x-responsive-nav-link>
                 @else
-                    <x-responsive-nav-link :href="route('student.courses.index')" :active="request()->routeIs('student.*')">{{ __('Mis Cursos') }}</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('student.courses.index')" :active="request()->routeIs('student.*')">{{ auth()->user()->hasRole('profesor') ? __('Cursos') : __('Mis Cursos') }}</x-responsive-nav-link>
                 @endif
             @endauth
         </div>

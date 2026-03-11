@@ -32,7 +32,8 @@
                     <div>
                         <x-input-label for="role" :value="__('Rol')" />
                         <select id="role" name="role" class="input-nova mt-1 block w-full rounded-lg border-slate-300" required>
-                            <option value="student" {{ $user->hasRole('student') ? 'selected' : '' }}>Estudiante</option>
+                            <option value="student" {{ $user->hasRole('student') ? 'selected' : '' }}>Alumno</option>
+                            <option value="profesor" {{ $user->hasRole('profesor') ? 'selected' : '' }}>Profesor</option>
                             <option value="admin" {{ $user->hasRole('admin') ? 'selected' : '' }}>Administrador</option>
                         </select>
                         <x-input-error class="mt-2" :messages="$errors->get('role')" />

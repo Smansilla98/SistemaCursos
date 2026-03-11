@@ -8,8 +8,16 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Student\CourseController as StudentCourseController;
 use Illuminate\Support\Facades\Route;
 
-// Rutas públicas
-Route::get('/', [HomeController::class, 'index'])->name('home');
+// Raíz: invitados → login; autenticados → dashboard
+Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
+})->name('home');
+
+// Catálogo de cursos (solo para ver sin login; si querés que sea solo con login, mové dentro de auth)
+Route::get('/cursos', [HomeController::class, 'index'])->name('courses.index');
 Route::get('/curso/{course}', [HomeController::class, 'showCourse'])->name('course.show');
 
 // Rutas de autenticación
@@ -19,9 +27,11 @@ require __DIR__.'/auth.php';
 Route::get('/dashboard', function () {
     if (auth()->user()->hasRole('admin')) {
         return redirect()->route('admin.dashboard');
-    } else {
+    }
+    if (auth()->user()->hasRole('profesor')) {
         return redirect()->route('student.courses.index');
     }
+    return redirect()->route('student.courses.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Rutas de perfil
@@ -43,8 +53,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/purchases/{purchase}/reject', [\App\Http\Controllers\Admin\PurchaseController::class, 'reject'])->name('purchases.reject');
 });
 
-// Rutas protegidas - Student
-Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
+// Rutas protegidas - Student y Profesor (cursos, compras)
+Route::middleware(['auth', 'role:student|profesor'])->prefix('student')->name('student.')->group(function () {
     Route::get('/courses', [StudentCourseController::class, 'index'])->name('courses.index');
     Route::get('/courses/{course}', [StudentCourseController::class, 'show'])->name('courses.show');
     Route::post('/courses/{course}/purchase', [\App\Http\Controllers\Student\PurchaseController::class, 'create'])->name('courses.purchase');
