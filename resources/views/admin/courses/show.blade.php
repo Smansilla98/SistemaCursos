@@ -3,10 +3,10 @@
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-slate-800 tracking-tight">{{ $course->title }}</h1>
-                <p class="mt-1 text-sm text-slate-500">Detalle y lecciones</p>
+                <p class="mt-1 text-sm text-slate-500">Detalle y material del curso (PDF, videos, documentos, enlaces)</p>
             </div>
             <div class="flex gap-2 shrink-0">
-                <a href="{{ route('admin.courses.edit', $course) }}" class="btn-nova">Editar</a>
+                <a href="{{ route('admin.courses.edit', $course) }}" class="btn-nova">Editar curso</a>
                 <a href="{{ route('admin.courses.index') }}" class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 shadow-sm hover:bg-slate-50">Volver</a>
             </div>
         </div>
@@ -42,39 +42,74 @@
 
             <div class="card-nova overflow-hidden">
                 <div class="p-6 border-b border-slate-200">
-                    <h3 class="text-lg font-semibold text-slate-800">Lecciones del curso</h3>
+                    <h3 class="text-lg font-semibold text-slate-800">Material del curso (lecciones)</h3>
+                    <p class="text-sm text-slate-500 mt-1">Podés agregar videos, PDFs, documentos, imágenes o enlaces externos.</p>
                 </div>
 
                 <div class="p-6">
                     <div class="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
-                        <h4 class="font-semibold text-slate-800 mb-3">Agregar lección</h4>
-                        <form action="{{ route('admin.courses.lessons.add', $course) }}" method="POST" enctype="multipart/form-data">
+                        <h4 class="font-semibold text-slate-800 mb-3">Agregar lección / material</h4>
+                        <form action="{{ route('admin.courses.lessons.add', $course) }}" method="POST" enctype="multipart/form-data" id="form-add-lesson">
                             @csrf
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2">
                                     <x-input-label for="lesson_title" :value="__('Título')" />
                                     <x-text-input id="lesson_title" name="title" type="text" class="mt-1 block w-full" required />
                                 </div>
                                 <div>
-                                    <x-input-label for="lesson_order" :value="__('Orden')" />
-                                    <x-text-input id="lesson_order" name="order" type="number" min="0" class="mt-1 block w-full" required />
+                                    <x-input-label for="lesson_description" :value="__('Descripción (opcional)')" />
+                                    <textarea id="lesson_description" name="description" rows="2" class="input-nova mt-1 block w-full rounded-lg border-slate-300 text-slate-800">{{ old('description') }}</textarea>
                                 </div>
                                 <div>
-                                    <x-input-label for="lesson_file_type" :value="__('Tipo')" />
+                                    <x-input-label for="lesson_order" :value="__('Orden')" />
+                                    <x-text-input id="lesson_order" name="order" type="number" min="0" class="mt-1 block w-full" value="{{ $course->lessons()->max('order') + 1 }}" required />
+                                </div>
+                                <div>
+                                    <x-input-label for="lesson_file_type" :value="__('Tipo de material')" />
                                     <select id="lesson_file_type" name="file_type" class="input-nova mt-1 block w-full rounded-lg border-slate-300" required>
-                                        <option value="video">Video</option>
-                                        <option value="pdf">PDF</option>
+                                        @foreach(\App\Models\Lesson::typeLabels() as $value => $label)
+                                            <option value="{{ $value }}">{{ $label }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
-                                <div>
+                                <div id="wrap-lesson-url" class="hidden">
+                                    <x-input-label for="lesson_url" :value="__('URL del enlace')" />
+                                    <x-text-input id="lesson_url" name="url" type="url" class="mt-1 block w-full" :value="old('url')" placeholder="https://..." />
+                                    <x-input-error class="mt-2" :messages="$errors->get('url')" />
+                                </div>
+                                <div id="wrap-lesson-file">
                                     <x-input-label for="lesson_file" :value="__('Archivo')" />
-                                    <input id="lesson_file" name="file" type="file" class="mt-1 block w-full text-sm text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700" required />
+                                    <input id="lesson_file" name="file" type="file" class="mt-1 block w-full text-sm text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700" accept=".mp4,.webm,.mov,.pdf,.doc,.docx,.odt,.txt,.jpg,.jpeg,.png,.gif,.webp" />
+                                    <p class="text-xs text-slate-500 mt-1">Máx. 150 MB. Video, PDF, documento o imagen.</p>
+                                    <x-input-error class="mt-2" :messages="$errors->get('file')" />
+                                </div>
+                                <div class="flex items-center">
+                                    <input id="lesson_is_locked" name="is_locked" type="checkbox" value="1" class="rounded border-slate-300 text-indigo-600 shadow-sm focus:ring-indigo-500" checked />
+                                    <x-input-label for="lesson_is_locked" :value="__('Bloqueado hasta compra')" class="ms-2" />
                                 </div>
                             </div>
                             <div class="mt-4">
                                 <x-primary-button>Agregar lección</x-primary-button>
                             </div>
                         </form>
+                        <script>
+                            (function() {
+                                var sel = document.getElementById('lesson_file_type');
+                                var wrapUrl = document.getElementById('wrap-lesson-url');
+                                var wrapFile = document.getElementById('wrap-lesson-file');
+                                var fileInput = document.getElementById('lesson_file');
+                                var urlInput = document.getElementById('lesson_url');
+                                function toggle() {
+                                    var isLink = sel.value === 'link';
+                                    wrapUrl.classList.toggle('hidden', !isLink);
+                                    wrapFile.classList.toggle('hidden', isLink);
+                                    fileInput.required = !isLink;
+                                    urlInput.required = isLink;
+                                }
+                                sel.addEventListener('change', toggle);
+                                toggle();
+                            })();
+                        </script>
                     </div>
 
                     <div class="space-y-3">
@@ -84,17 +119,23 @@
                                 <span class="text-slate-500 font-medium">#{{ $lesson->order }}</span>
                                 <div>
                                     <h5 class="font-semibold text-slate-800">{{ $lesson->title }}</h5>
-                                    <p class="text-sm text-slate-500">{{ $lesson->file_type }} · {{ $lesson->is_locked ? 'Bloqueado' : 'Desbloqueado' }}</p>
+                                    <p class="text-sm text-slate-500">
+                                        {{ \App\Models\Lesson::typeLabels()[$lesson->file_type] ?? $lesson->file_type }}
+                                        · {{ $lesson->is_locked ? 'Bloqueado' : 'Desbloqueado' }}
+                                    </p>
                                 </div>
                             </div>
-                            <form action="{{ route('admin.lessons.delete', $lesson) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar esta lección?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-700">Eliminar</button>
-                            </form>
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('admin.lessons.edit', $lesson) }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">Editar</a>
+                                <form action="{{ route('admin.lessons.delete', $lesson) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar esta lección?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-700">Eliminar</button>
+                                </form>
+                            </div>
                         </div>
                         @empty
-                        <p class="text-center py-8 text-slate-500">No hay lecciones en este curso</p>
+                        <p class="text-center py-8 text-slate-500">No hay lecciones. Agregá material arriba (video, PDF, documento, imagen o enlace).</p>
                         @endforelse
                     </div>
                 </div>

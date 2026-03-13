@@ -25,22 +25,36 @@
         @endif
     </head>
     <body class="font-sans antialiased bg-slate-50">
+        @php
+            $showAdminSidebar = auth()->check()
+                && auth()->user()->hasRole('admin')
+                && request()->routeIs('admin.*');
+        @endphp
+
         <div class="min-h-screen bg-slate-50">
             @include('layouts.navigation')
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white border-b border-slate-200 shadow-nova">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
+            <div class="{{ $showAdminSidebar ? 'lg:flex' : '' }}">
+                @if($showAdminSidebar)
+                    @include('layouts.admin-sidebar')
+                @endif
 
-            <!-- Page Content -->
-            <main class="py-8">
-                {{ $slot }}
-            </main>
+                <div class="flex-1">
+                    <!-- Page Heading -->
+                    @isset($header)
+                        <header class="bg-white border-b border-slate-200 shadow-nova">
+                            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                                {{ $header }}
+                            </div>
+                        </header>
+                    @endisset
+
+                    <!-- Page Content -->
+                    <main class="py-8">
+                        {{ $slot }}
+                    </main>
+                </div>
+            </div>
         </div>
     </body>
 </html>

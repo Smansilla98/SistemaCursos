@@ -46,6 +46,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
     Route::resource('courses', AdminCourseController::class);
     Route::post('/courses/{course}/lessons', [AdminCourseController::class, 'addLesson'])->name('courses.lessons.add');
+    Route::get('/lessons/{lesson}/edit', [AdminCourseController::class, 'editLesson'])->name('lessons.edit');
+    Route::put('/lessons/{lesson}', [AdminCourseController::class, 'updateLesson'])->name('lessons.update');
     Route::delete('/lessons/{lesson}', [AdminCourseController::class, 'deleteLesson'])->name('lessons.delete');
     Route::resource('users', AdminUserController::class);
     Route::get('/purchases', [\App\Http\Controllers\Admin\PurchaseController::class, 'index'])->name('purchases.index');

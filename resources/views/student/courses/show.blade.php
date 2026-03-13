@@ -55,19 +55,37 @@
                             <span class="text-slate-500 font-semibold">#{{ $lesson->order }}</span>
                             <div>
                                 <h4 class="font-semibold text-slate-800">{{ $lesson->title }}</h4>
-                                <p class="text-sm text-slate-500">{{ $lesson->file_type === 'video' ? 'Video' : 'PDF' }}</p>
+                                @if($lesson->description)
+                                    <p class="text-sm text-slate-600 mt-1">{{ $lesson->description }}</p>
+                                @endif
+                                <p class="text-sm text-slate-500 mt-1">{{ \App\Models\Lesson::typeLabels()[$lesson->file_type] ?? $lesson->file_type }}</p>
                             </div>
                         </div>
                         <div class="shrink-0">
                             @if($lesson->isVideo())
-                            <a href="{{ asset('storage/' . $lesson->file_path) }}" target="_blank" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                            <a href="{{ $lesson->resource_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
                                 Ver video
                             </a>
-                            @else
-                            <a href="{{ asset('storage/' . $lesson->file_path) }}" target="_blank" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white bg-slate-700 hover:bg-slate-800">
+                            @elseif($lesson->isPdf())
+                            <a href="{{ $lesson->resource_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white bg-slate-700 hover:bg-slate-800">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
                                 Ver PDF
+                            </a>
+                            @elseif($lesson->isDocument())
+                            <a href="{{ $lesson->resource_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
+                                Ver documento
+                            </a>
+                            @elseif($lesson->isImage())
+                            <a href="{{ $lesson->resource_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg>
+                                Ver imagen
+                            </a>
+                            @else
+                            <a href="{{ $lesson->resource_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+                                Abrir enlace
                             </a>
                             @endif
                         </div>
