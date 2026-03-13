@@ -7,11 +7,17 @@ use App\Models\Course;
 use App\Models\User;
 use App\Models\Purchase;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 
 class DashboardController extends Controller
 {
     public function index()
     {
+        // Asegurar que existan los roles básicos para evitar RoleDoesNotExist en producción
+        foreach (['admin', 'profesor', 'student'] as $roleName) {
+            Role::firstOrCreate(['name' => $roleName]);
+        }
+
         $stats = [
             'total_courses' => Course::count(),
             'active_courses' => Course::where('is_active', true)->count(),
