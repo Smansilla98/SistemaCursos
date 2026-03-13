@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use Spatie\Permission\Models\Role;
 
 class RegisteredUserController extends Controller
 {
@@ -42,7 +43,10 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $user->assignRole($request->role);
+        // Asegurar que el rol exista en la tabla roles (prod puede no tener seeders corridos)
+        $roleName = $request->role;
+        Role::firstOrCreate(['name' => $roleName]);
+        $user->assignRole($roleName);
 
         event(new Registered($user));
 

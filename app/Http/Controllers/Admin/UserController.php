@@ -28,7 +28,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,student',
+            'role' => 'required|in:admin,profesor,student',
         ]);
 
         $user = User::create([
@@ -37,6 +37,8 @@ class UserController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
+        // Garantizar que el rol exista
+        Role::firstOrCreate(['name' => $validated['role']]);
         $user->assignRole($validated['role']);
 
         return redirect()->route('admin.users.index')
@@ -61,7 +63,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|in:admin,student',
+            'role' => 'required|in:admin,profesor,student',
         ]);
 
         $user->update([
@@ -75,6 +77,8 @@ class UserController extends Controller
             ]);
         }
 
+        // Garantizar que el rol exista
+        Role::firstOrCreate(['name' => $validated['role']]);
         $user->syncRoles([$validated['role']]);
 
         return redirect()->route('admin.users.index')
