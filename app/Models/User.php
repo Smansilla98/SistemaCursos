@@ -53,6 +53,14 @@ class User extends Authenticatable
         return $this->belongsToMany(Course::class, 'course_user')->withTimestamps();
     }
 
+    /** Lecciones marcadas como completadas (progreso) */
+    public function completedLessons()
+    {
+        return $this->belongsToMany(Lesson::class, 'lesson_user')
+            ->withPivot('completed_at')
+            ->withTimestamps();
+    }
+
     public function purchases()
     {
         return $this->hasMany(Purchase::class);

@@ -59,6 +59,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 Route::middleware(['auth', 'role:student|profesor'])->prefix('student')->name('student.')->group(function () {
     Route::get('/courses', [StudentCourseController::class, 'index'])->name('courses.index');
     Route::get('/courses/{course}', [StudentCourseController::class, 'show'])->name('courses.show');
+    Route::get('/courses/{course}/lessons/{lesson}', [StudentCourseController::class, 'showLesson'])->name('courses.lesson');
+    Route::post('/lessons/{lesson}/complete', [StudentCourseController::class, 'completeLesson'])->name('lessons.complete');
     Route::post('/courses/{course}/purchase', [\App\Http\Controllers\Student\PurchaseController::class, 'create'])->name('courses.purchase');
     Route::get('/purchases/success', [\App\Http\Controllers\Student\PurchaseController::class, 'success'])->name('purchases.success');
     Route::get('/purchases/failure', [\App\Http\Controllers\Student\PurchaseController::class, 'failure'])->name('purchases.failure');

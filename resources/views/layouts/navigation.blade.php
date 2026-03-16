@@ -13,6 +13,9 @@
                     <x-nav-link :href="route('home')" :active="request()->routeIs('home')">
                         {{ __('Inicio') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('courses.index')" :active="request()->routeIs('courses.index')">
+                        {{ __('Catálogo') }}
+                    </x-nav-link>
                     @auth
                         @if(auth()->user()->hasRole('admin'))
                             <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">
@@ -68,6 +71,7 @@
     <div :class="{'block': open, 'hidden': !open}" class="hidden sm:hidden border-t border-slate-200 bg-white">
         <div class="pt-2 pb-3 space-y-1 px-4">
             <x-responsive-nav-link :href="route('home')" :active="request()->routeIs('home')">{{ __('Inicio') }}</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('courses.index')" :active="request()->routeIs('courses.index')">{{ __('Catálogo') }}</x-responsive-nav-link>
             @auth
                 @if(auth()->user()->hasRole('admin'))
                     <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">{{ __('Admin') }}</x-responsive-nav-link>

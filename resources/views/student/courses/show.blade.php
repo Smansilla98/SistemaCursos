@@ -1,7 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="text-2xl font-bold text-slate-800 tracking-tight">{{ $course->title }}</h1>
-        <p class="mt-1 text-sm text-slate-500">Contenido del curso</p>
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800 tracking-tight">{{ $course->title }}</h1>
+                <p class="mt-1 text-sm text-slate-500">Contenido del curso</p>
+            </div>
+            @if($hasAccess && $course->lessons->isNotEmpty() && $firstLessonUrl)
+                <a href="{{ $nextLessonUrl ?? $firstLessonUrl }}" class="btn-nova shrink-0">
+                    {{ $nextLessonUrl ? 'Continuar donde lo dejaste' : 'Entrar al curso' }}
+                </a>
+            @endif
+        </div>
     </x-slot>
 
     <div class="py-8">
@@ -39,6 +48,22 @@
                         <h2 class="text-2xl font-bold text-slate-800 mb-4">{{ $course->title }}</h2>
                         <p class="text-slate-600 whitespace-pre-line mb-4">{{ $course->description }}</p>
                         <p class="text-2xl font-bold text-indigo-600">${{ number_format($course->price, 2) }}</p>
+                        @if($hasAccess && $course->lessons->isNotEmpty())
+                            @php
+                                $total = $course->lessons->count();
+                                $completed = (int) ($completedCount ?? 0);
+                                $pct = $total > 0 ? (int) round(($completed / $total) * 100) : 0;
+                            @endphp
+                            <div class="mt-4">
+                                <div class="flex items-center justify-between text-sm text-slate-600 mb-1">
+                                    <span>Tu progreso</span>
+                                    <span>{{ $completed }} de {{ $total }} clases ({{ $pct }}%)</span>
+                                </div>
+                                <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                                    <div class="h-full bg-emerald-500 rounded-full transition-all" style="width: {{ $pct }}%"></div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -47,49 +72,35 @@
             <div class="card-nova overflow-hidden">
                 <div class="p-6 border-b border-slate-200">
                     <h3 class="text-lg font-semibold text-slate-800">Contenido del curso</h3>
+                    <p class="text-sm text-slate-500 mt-1">Entrá a cada clase para ver el material (video, PDF o documento) y que se marque tu avance.</p>
                 </div>
                 <div class="divide-y divide-slate-200">
-                    @forelse($course->lessons()->orderBy('order')->get() as $lesson)
-                    <div class="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    @forelse($course->lessons as $l)
+                    @php
+                        $completed = in_array($l->id, $completedLessonIds ?? []);
+                    @endphp
+                    <a href="{{ route('student.courses.lesson', [$course, $l]) }}" class="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:bg-slate-50 transition-colors group">
                         <div class="flex items-center gap-4">
-                            <span class="text-slate-500 font-semibold">#{{ $lesson->order }}</span>
+                            @if($completed)
+                                <span class="shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-emerald-100 text-emerald-600">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                </span>
+                            @else
+                                <span class="shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-slate-200 text-slate-600 text-sm font-semibold group-hover:bg-indigo-100 group-hover:text-indigo-700 transition-colors">{{ $loop->iteration }}</span>
+                            @endif
                             <div>
-                                <h4 class="font-semibold text-slate-800">{{ $lesson->title }}</h4>
-                                @if($lesson->description)
-                                    <p class="text-sm text-slate-600 mt-1">{{ $lesson->description }}</p>
+                                <h4 class="font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">{{ $l->title }}</h4>
+                                @if($l->description)
+                                    <p class="text-sm text-slate-600 mt-0.5">{{ Str::limit($l->description, 80) }}</p>
                                 @endif
-                                <p class="text-sm text-slate-500 mt-1">{{ \App\Models\Lesson::typeLabels()[$lesson->file_type] ?? $lesson->file_type }}</p>
+                                <p class="text-sm text-slate-500 mt-1">{{ \App\Models\Lesson::typeLabels()[$l->file_type] ?? $l->file_type }}</p>
                             </div>
                         </div>
-                        <div class="shrink-0">
-                            @if($lesson->isVideo())
-                            <a href="{{ $lesson->resource_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
-                                Ver video
-                            </a>
-                            @elseif($lesson->isPdf())
-                            <a href="{{ $lesson->resource_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white bg-slate-700 hover:bg-slate-800">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
-                                Ver PDF
-                            </a>
-                            @elseif($lesson->isDocument())
-                            <a href="{{ $lesson->resource_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
-                                Ver documento
-                            </a>
-                            @elseif($lesson->isImage())
-                            <a href="{{ $lesson->resource_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg>
-                                Ver imagen
-                            </a>
-                            @else
-                            <a href="{{ $lesson->resource_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
-                                Abrir enlace
-                            </a>
-                            @endif
-                        </div>
-                    </div>
+                        <span class="text-sm font-medium text-indigo-600 group-hover:text-indigo-700 shrink-0 flex items-center gap-1">
+                            {{ $completed ? 'Ver de nuevo' : 'Ver clase' }}
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 001.414 0l10-10a1 1 0 00-1.414-1.414L8 12.586 2.707 3.293a1 1 0 000 1.414z" clip-rule="evenodd"/></svg>
+                        </span>
+                    </a>
                     @empty
                     <div class="p-12 text-center text-slate-500">Este curso aún no tiene contenido disponible.</div>
                     @endforelse
