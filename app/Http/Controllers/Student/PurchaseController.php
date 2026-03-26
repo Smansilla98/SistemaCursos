@@ -28,8 +28,7 @@ class PurchaseController extends Controller
             ->first();
 
         if ($existingPurchase) {
-            return redirect()->route('student.courses.show', $course)
-                ->with('info', 'Ya tienes una compra pendiente para este curso');
+            return $this->redirectToCheckout($existingPurchase, $course);
         }
 
         // Crear compra
@@ -40,39 +39,7 @@ class PurchaseController extends Controller
             'status' => 'pending',
         ]);
 
-        // Configurar MercadoPago
-        $accessToken = config('services.mercadopago.access_token');
-        if ($accessToken) {
-            MercadoPagoConfig::setAccessToken($accessToken);
-            
-            $client = new PreferenceClient();
-            $preference = $client->create([
-                "items" => [
-                    [
-                        "title" => $course->title,
-                        "quantity" => 1,
-                        "unit_price" => (float) $course->price,
-                    ]
-                ],
-                "back_urls" => [
-                    "success" => route('student.purchases.success'),
-                    "failure" => route('student.purchases.failure'),
-                    "pending" => route('student.purchases.pending'),
-                ],
-                "auto_return" => "approved",
-                "external_reference" => $purchase->id,
-            ]);
-
-            // El payment_id se actualizará cuando MercadoPago notifique el pago
-            // Por ahora guardamos el preference_id temporalmente
-            // Nota: En producción, el payment_id vendrá del webhook
-
-            return redirect($preference->init_point);
-        }
-
-        // Si no hay configuración de MercadoPago
-        return redirect()->route('student.courses.show', $course)
-            ->with('info', 'Compra creada. El administrador la revisará manualmente.');
+        return $this->redirectToCheckout($purchase, $course);
     }
 
     public function success(Request $request)
@@ -94,6 +61,43 @@ class PurchaseController extends Controller
     {
         return redirect()->route('student.courses.index')
             ->with('info', 'El pago está pendiente de confirmación.');
+    }
+
+    private function redirectToCheckout(Purchase $purchase, Course $course)
+    {
+        $accessToken = config('services.mercadopago.access_token');
+        if (!$accessToken) {
+            return redirect()->route('student.courses.show', $course)
+                ->with('info', 'Compra creada. El administrador la revisará manualmente.');
+        }
+
+        MercadoPagoConfig::setAccessToken($accessToken);
+
+        $client = new PreferenceClient();
+        $preference = $client->create([
+            "items" => [
+                [
+                    "title" => $course->title,
+                    "quantity" => 1,
+                    "unit_price" => (float) $course->price,
+                ],
+            ],
+            "back_urls" => [
+                "success" => route('student.purchases.success'),
+                "failure" => route('student.purchases.failure'),
+                "pending" => route('student.purchases.pending'),
+            ],
+            "notification_url" => route('api.mercadopago.webhook'),
+            "auto_return" => "approved",
+            "external_reference" => (string) $purchase->id,
+        ]);
+
+        $isTestToken = str_starts_with($accessToken, 'TEST-');
+        $checkoutUrl = $isTestToken && !empty($preference->sandbox_init_point)
+            ? $preference->sandbox_init_point
+            : $preference->init_point;
+
+        return redirect($checkoutUrl);
     }
 }
 
