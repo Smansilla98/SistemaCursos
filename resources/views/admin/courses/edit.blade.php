@@ -33,11 +33,18 @@
                         <x-input-label for="thumbnail" :value="__('Imagen de portada')" />
                         @if($course->thumbnail)
                         <div class="mb-2">
-                            <img src="{{ asset('storage/' . $course->thumbnail) }}" alt="Portada actual" class="w-32 h-32 object-cover rounded-xl border border-slate-200">
+                            <img src="{{ $course->thumbnail_url }}" alt="Portada actual" class="w-32 h-32 object-cover rounded-xl border border-slate-200">
                         </div>
                         @endif
                         <input id="thumbnail" name="thumbnail" type="file" accept="image/*" class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
                         <x-input-error class="mt-2" :messages="$errors->get('thumbnail')" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="thumbnail_url" :value="__('URL externa de portada (opcional)')" />
+                        <x-text-input id="thumbnail_url" name="thumbnail_url" type="url" class="mt-1 block w-full" :value="old('thumbnail_url', $course->isExternalThumbnail() ? $course->thumbnail : '')" placeholder="https://..." />
+                        <p class="text-xs text-slate-500 mt-1">Podés usar una imagen externa (Drive, CDN, etc.). Usá archivo o URL, no ambos.</p>
+                        <x-input-error class="mt-2" :messages="$errors->get('thumbnail_url')" />
                     </div>
 
                     <div class="flex items-center">

@@ -34,6 +34,13 @@
                         <x-input-error class="mt-2" :messages="$errors->get('thumbnail')" />
                     </div>
 
+                    <div>
+                        <x-input-label for="thumbnail_url" :value="__('URL externa de portada (opcional)')" />
+                        <x-text-input id="thumbnail_url" name="thumbnail_url" type="url" class="mt-1 block w-full" :value="old('thumbnail_url')" placeholder="https://..." />
+                        <p class="text-xs text-slate-500 mt-1">Podés usar una imagen externa (Drive, CDN, etc.). Usá archivo o URL, no ambos.</p>
+                        <x-input-error class="mt-2" :messages="$errors->get('thumbnail_url')" />
+                    </div>
+
                     <div class="flex items-center">
                         <input id="is_active" name="is_active" type="checkbox" value="1" class="rounded border-slate-300 text-indigo-600 shadow-sm focus:ring-indigo-500" {{ old('is_active', true) ? 'checked' : '' }} />
                         <x-input-label for="is_active" :value="__('Curso activo')" class="ms-2" />

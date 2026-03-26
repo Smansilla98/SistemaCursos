@@ -37,7 +37,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         @if($course->thumbnail)
-                        <img src="{{ asset('storage/' . $course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-64 object-cover rounded-xl">
+                        <img src="{{ $course->thumbnail_url }}" alt="{{ $course->title }}" class="w-full h-64 object-cover rounded-xl">
                         @else
                         <div class="w-full h-64 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center">
                             <span class="text-white text-4xl font-bold">{{ substr($course->title, 0, 2) }}</span>

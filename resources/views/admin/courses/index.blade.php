@@ -29,7 +29,7 @@
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-3">
                                         @if($course->thumbnail)
-                                        <img src="{{ asset('storage/' . $course->thumbnail) }}" alt="{{ $course->title }}" class="w-12 h-12 object-cover rounded-lg">
+                                        <img src="{{ $course->thumbnail_url }}" alt="{{ $course->title }}" class="w-12 h-12 object-cover rounded-lg">
                                         @endif
                                         <span class="font-medium text-slate-800">{{ $course->title }}</span>
                                     </div>

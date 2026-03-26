@@ -22,6 +22,23 @@ class Course extends Model
         'is_active' => 'boolean',
     ];
 
+    public function isExternalThumbnail(): bool
+    {
+        return is_string($this->thumbnail)
+            && ($this->thumbnail !== '')
+            && (str_starts_with($this->thumbnail, 'http://') || str_starts_with($this->thumbnail, 'https://'));
+    }
+
+    public function getThumbnailUrlAttribute(): ?string
+    {
+        if (!$this->thumbnail) {
+            return null;
+        }
+        return $this->isExternalThumbnail()
+            ? $this->thumbnail
+            : asset('storage/' . $this->thumbnail);
+    }
+
     public function lessons(): HasMany
     {
         return $this->hasMany(Lesson::class)->orderBy('order');

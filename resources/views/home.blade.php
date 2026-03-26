@@ -90,7 +90,7 @@
                         <a href="{{ route('course.show', $course) }}" class="group block rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-600 to-indigo-800 shadow-nova hover:shadow-nova-md transition-all duration-200 hover:scale-[1.02]">
                             @if($course->thumbnail)
                                 <div class="aspect-video relative">
-                                    <img src="{{ asset('storage/' . $course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-full object-cover group-hover:opacity-90 transition-opacity" />
+                                    <img src="{{ $course->thumbnail_url }}" alt="{{ $course->title }}" class="w-full h-full object-cover group-hover:opacity-90 transition-opacity" />
                                 </div>
                             @else
                                 <div class="aspect-video flex items-center justify-center bg-indigo-700/50">

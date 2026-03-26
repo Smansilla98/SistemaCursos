@@ -31,12 +31,23 @@ class CourseController extends Controller
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
             'thumbnail' => 'nullable|image|max:2048',
+            'thumbnail_url' => 'nullable|url|max:2000',
             'is_active' => 'boolean',
         ]);
 
-        if ($request->hasFile('thumbnail')) {
+        if (!empty($validated['thumbnail_url']) && $request->hasFile('thumbnail')) {
+            throw ValidationException::withMessages([
+                'thumbnail' => 'Usá archivo o URL externa, no ambos.',
+                'thumbnail_url' => 'Usá archivo o URL externa, no ambos.',
+            ]);
+        }
+
+        if (!empty($validated['thumbnail_url'])) {
+            $validated['thumbnail'] = $validated['thumbnail_url'];
+        } elseif ($request->hasFile('thumbnail')) {
             $validated['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
         }
+        unset($validated['thumbnail_url']);
 
         $course = Course::create($validated);
 
@@ -62,15 +73,29 @@ class CourseController extends Controller
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
             'thumbnail' => 'nullable|image|max:2048',
+            'thumbnail_url' => 'nullable|url|max:2000',
             'is_active' => 'boolean',
         ]);
 
-        if ($request->hasFile('thumbnail')) {
-            if ($course->thumbnail) {
+        if (!empty($validated['thumbnail_url']) && $request->hasFile('thumbnail')) {
+            throw ValidationException::withMessages([
+                'thumbnail' => 'Usá archivo o URL externa, no ambos.',
+                'thumbnail_url' => 'Usá archivo o URL externa, no ambos.',
+            ]);
+        }
+
+        if (!empty($validated['thumbnail_url'])) {
+            if ($course->thumbnail && !$course->isExternalThumbnail()) {
+                Storage::disk('public')->delete($course->thumbnail);
+            }
+            $validated['thumbnail'] = $validated['thumbnail_url'];
+        } elseif ($request->hasFile('thumbnail')) {
+            if ($course->thumbnail && !$course->isExternalThumbnail()) {
                 Storage::disk('public')->delete($course->thumbnail);
             }
             $validated['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
         }
+        unset($validated['thumbnail_url']);
 
         $course->update($validated);
 
@@ -81,11 +106,11 @@ class CourseController extends Controller
     public function destroy(Course $course)
     {
         foreach ($course->lessons as $lesson) {
-            if ($lesson->file_path && ! $lesson->isLink()) {
+            if ($lesson->file_path && ! $lesson->isLink() && ! $lesson->isExternal()) {
                 Storage::disk('public')->delete($lesson->file_path);
             }
         }
-        if ($course->thumbnail) {
+        if ($course->thumbnail && !$course->isExternalThumbnail()) {
             Storage::disk('public')->delete($course->thumbnail);
         }
         $course->delete();

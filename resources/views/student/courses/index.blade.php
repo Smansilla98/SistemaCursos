@@ -13,7 +13,7 @@
                     @foreach($myCourses as $course)
                     <article class="card-nova hover:shadow-nova-md transition-shadow">
                         @if($course->thumbnail)
-                        <img src="{{ asset('storage/' . $course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-48 object-cover rounded-t-xl">
+                        <img src="{{ $course->thumbnail_url }}" alt="{{ $course->title }}" class="w-full h-48 object-cover rounded-t-xl">
                         @else
                         <div class="w-full h-48 bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center rounded-t-xl">
                             <span class="text-white text-2xl font-bold">{{ substr($course->title, 0, 2) }}</span>
@@ -37,7 +37,7 @@
                     @foreach($availableCourses as $course)
                     <article class="card-nova hover:shadow-nova-md transition-shadow">
                         @if($course->thumbnail)
-                        <img src="{{ asset('storage/' . $course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-48 object-cover rounded-t-xl">
+                        <img src="{{ $course->thumbnail_url }}" alt="{{ $course->title }}" class="w-full h-48 object-cover rounded-t-xl">
                         @else
                         <div class="w-full h-48 bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center rounded-t-xl">
                             <span class="text-white text-2xl font-bold">{{ substr($course->title, 0, 2) }}</span>
