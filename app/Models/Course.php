@@ -34,9 +34,34 @@ class Course extends Model
         if (!$this->thumbnail) {
             return null;
         }
-        return $this->isExternalThumbnail()
-            ? $this->thumbnail
-            : asset('storage/' . $this->thumbnail);
+        if ($this->isExternalThumbnail()) {
+            return $this->normalizeExternalThumbnailUrl($this->thumbnail);
+        }
+        return asset('storage/' . $this->thumbnail);
+    }
+
+    private function normalizeExternalThumbnailUrl(string $url): string
+    {
+        $id = $this->extractGoogleDriveId($url);
+        if ($id) {
+            // Convierte links "compartir" de Drive a URL apta para <img>
+            return "https://drive.google.com/thumbnail?id={$id}&sz=w1600";
+        }
+        return $url;
+    }
+
+    private function extractGoogleDriveId(string $url): ?string
+    {
+        if (preg_match('#drive\\.google\\.com/file/d/([^/]+)#', $url, $m)) {
+            return $m[1];
+        }
+        if (preg_match('#drive\\.google\\.com/open\\?id=([^&]+)#', $url, $m)) {
+            return $m[1];
+        }
+        if (preg_match('#drive\\.google\\.com/uc\\?id=([^&]+)#', $url, $m)) {
+            return $m[1];
+        }
+        return null;
     }
 
     public function lessons(): HasMany
