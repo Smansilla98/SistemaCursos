@@ -44,18 +44,21 @@
                         <x-input-error class="mt-2" :messages="$errors->get('file_type')" />
                     </div>
 
-                    {{-- Enlace URL (solo si tipo = link) --}}
-                    <div id="wrap-url" class="{{ $lesson->file_type !== 'link' ? 'hidden' : '' }}">
-                        <x-input-label for="url" :value="__('URL del enlace')" />
-                        <x-text-input id="url" name="url" type="url" class="mt-1 block w-full" :value="old('url', $lesson->isLink() ? $lesson->file_path : '')" placeholder="https://..." />
+                    {{-- URL externa (Drive) opcional para cualquier tipo; obligatoria si tipo = link --}}
+                    <div id="wrap-url">
+                        <x-input-label for="url" :value="__('URL externa (Google Drive, etc.)')" />
+                        <x-text-input id="url" name="url" type="url" class="mt-1 block w-full" :value="old('url', ($lesson->isExternal() || $lesson->isLink()) ? $lesson->resource_url : '')" placeholder="Pegá un link de Google Drive (compartido) o cualquier URL https://..." />
                         <x-input-error class="mt-2" :messages="$errors->get('url')" />
+                        <p class="text-xs text-slate-500 mt-1">Si completás esta URL, no hace falta subir archivo. Para Drive: compartí como “Cualquiera con el enlace”.</p>
                     </div>
 
                     {{-- Archivo (si tipo es video, pdf, document, image) --}}
-                    <div id="wrap-file" class="{{ $lesson->file_type === 'link' ? 'hidden' : '' }}">
+                    <div id="wrap-file" class="{{ $lesson->file_type === 'link' ? 'opacity-60' : '' }}">
                         <x-input-label for="file" :value="__('Archivo')" />
-                        @if($lesson->file_path && !$lesson->isLink())
+                        @if($lesson->file_path && !$lesson->isExternal() && !$lesson->isLink())
                             <p class="text-sm text-slate-500 mt-1 mb-2">Actual: {{ basename($lesson->file_path) }}. Dejá vacío para mantenerlo.</p>
+                        @elseif($lesson->isExternal() || $lesson->isLink())
+                            <p class="text-sm text-slate-500 mt-1 mb-2">Actual: URL externa. Podés cambiarla arriba o subir un archivo para reemplazar.</p>
                         @endif
                         <input id="file" name="file" type="file" class="mt-1 block w-full text-sm text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700" accept=".mp4,.webm,.mov,.pdf,.doc,.docx,.odt,.txt,.jpg,.jpeg,.png,.gif,.webp" />
                         <x-input-error class="mt-2" :messages="$errors->get('file')" />
@@ -78,12 +81,7 @@
     <script>
         document.getElementById('file_type').addEventListener('change', function() {
             var isLink = this.value === 'link';
-            document.getElementById('wrap-url').classList.toggle('hidden', !isLink);
-            document.getElementById('wrap-file').classList.toggle('hidden', isLink);
-            document.getElementById('file').required = !isLink;
-            document.getElementById('url').required = isLink;
+            document.getElementById('wrap-file').classList.toggle('opacity-60', isLink);
         });
-        document.getElementById('file').required = document.getElementById('file_type').value !== 'link';
-        document.getElementById('url').required = document.getElementById('file_type').value === 'link';
     </script>
 </x-app-layout>

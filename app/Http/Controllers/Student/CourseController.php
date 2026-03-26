@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Lesson;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class CourseController extends Controller
 {
@@ -39,11 +40,14 @@ class CourseController extends Controller
         $nextLessonUrl = null;
 
         if ($hasAccess && $course->lessons->isNotEmpty()) {
-            $completedLessonIds = $user->completedLessons()
-                ->where('course_id', $course->id)
-                ->pluck('lessons.id')
-                ->all();
-            $completedCount = count($completedLessonIds);
+            // Si la tabla de progreso aún no existe (deploy sin migraciones), no romper la vista.
+            if (Schema::hasTable('lesson_user')) {
+                $completedLessonIds = $user->completedLessons()
+                    ->where('course_id', $course->id)
+                    ->pluck('lessons.id')
+                    ->all();
+                $completedCount = count($completedLessonIds);
+            }
             $first = $course->lessons->first();
             $firstLessonUrl = route('student.courses.lesson', [$course, $first]);
 
@@ -75,10 +79,13 @@ class CourseController extends Controller
         }
 
         $lessons = $course->lessons()->orderBy('order')->get();
-        $completedIds = $user->completedLessons()
-            ->whereIn('lessons.id', $lessons->pluck('id'))
-            ->pluck('lessons.id')
-            ->all();
+        $completedIds = [];
+        if (Schema::hasTable('lesson_user')) {
+            $completedIds = $user->completedLessons()
+                ->whereIn('lessons.id', $lessons->pluck('id'))
+                ->pluck('lessons.id')
+                ->all();
+        }
 
         $currentIndex = $lessons->search(fn ($l) => $l->id === $lesson->id);
         $prevLesson = $currentIndex > 0 ? $lessons[$currentIndex - 1] : null;
@@ -113,6 +120,13 @@ class CourseController extends Controller
                 return response()->json(['error' => 'Sin acceso'], 403);
             }
             abort(403);
+        }
+
+        if (!Schema::hasTable('lesson_user')) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Progreso no disponible (faltan migraciones)'], 503);
+            }
+            return back()->with('error', 'El progreso no está disponible todavía (faltan migraciones en el servidor).');
         }
 
         $user->completedLessons()->syncWithoutDetaching([

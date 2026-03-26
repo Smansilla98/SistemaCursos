@@ -57,36 +57,40 @@
                         </div>
                         <div class="flex-1 flex items-center justify-center relative min-h-[300px]">
                             @if($lesson->isVideo())
-                                <video
-                                    id="lesson-player"
-                                    class="w-full h-full max-h-[70vh] object-contain"
-                                    controls
-                                    controlsList="nodownload"
-                                    src="{{ $lesson->resource_url }}"
-                                    data-lesson-id="{{ $lesson->id }}"
-                                    data-complete-url="{{ route('student.lessons.complete', $lesson) }}"
-                                    data-next-url="{{ $nextLesson ? route('student.courses.lesson', [$course, $nextLesson]) : route('student.courses.show', $course) }}"
-                                >
-                                    Tu navegador no soporta video HTML5.
-                                </video>
-                            @elseif($lesson->isPdf() || $lesson->isDocument())
+                                @if($lesson->isExternal())
+                                    {{-- Drive/externo: usamos embed en iframe para reproductor interno --}}
+                                    <iframe
+                                        src="{{ $lesson->embed_url }}"
+                                        class="w-full h-full min-h-[60vh] border-0"
+                                        title="{{ $lesson->title }}"
+                                        allow="autoplay"
+                                    ></iframe>
+                                @else
+                                    <video
+                                        id="lesson-player"
+                                        class="w-full h-full max-h-[70vh] object-contain"
+                                        controls
+                                        controlsList="nodownload"
+                                        src="{{ $lesson->resource_url }}"
+                                        data-lesson-id="{{ $lesson->id }}"
+                                        data-complete-url="{{ route('student.lessons.complete', $lesson) }}"
+                                        data-next-url="{{ $nextLesson ? route('student.courses.lesson', [$course, $nextLesson]) : route('student.courses.show', $course) }}"
+                                    >
+                                        Tu navegador no soporta video HTML5.
+                                    </video>
+                                @endif
+                            @elseif($lesson->isPdf() || $lesson->isDocument() || $lesson->isLink())
                                 <iframe
-                                    src="{{ $lesson->resource_url }}"
+                                    src="{{ $lesson->embed_url }}"
                                     class="w-full h-full min-h-[60vh] border-0"
                                     title="{{ $lesson->title }}"
                                 ></iframe>
                             @elseif($lesson->isImage())
                                 <img src="{{ $lesson->resource_url }}" alt="{{ $lesson->title }}" class="max-w-full max-h-[70vh] object-contain" />
-                            @elseif($lesson->isLink())
-                                <iframe
-                                    src="{{ $lesson->resource_url }}"
-                                    class="w-full h-full min-h-[60vh] border-0"
-                                    title="{{ $lesson->title }}"
-                                ></iframe>
                             @endif
                         </div>
-                        {{-- Botón "Siguiente" y "Marcar como completada" para no-video --}}
-                        @if(!$lesson->isVideo())
+                        {{-- Botón "Siguiente" y "Marcar como completada" para no-video o video externo (iframe) --}}
+                        @if(!$lesson->isVideo() || ($lesson->isVideo() && $lesson->isExternal()))
                             <div class="p-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
                                 <form action="{{ route('student.lessons.complete', $lesson) }}" method="POST" class="inline">
                                     @csrf
@@ -140,8 +144,8 @@
         </div>
     </div>
 
-    {{-- Video: al terminar, marcar completada y pasar a la siguiente --}}
-    @if($lesson->isVideo())
+    {{-- Video local: al terminar, marcar completada y pasar a la siguiente --}}
+    @if($lesson->isVideo() && !$lesson->isExternal())
     <script>
         (function() {
             var player = document.getElementById('lesson-player');

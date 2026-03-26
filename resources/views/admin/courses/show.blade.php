@@ -72,10 +72,11 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div id="wrap-lesson-url" class="hidden">
-                                    <x-input-label for="lesson_url" :value="__('URL del enlace')" />
-                                    <x-text-input id="lesson_url" name="url" type="url" class="mt-1 block w-full" :value="old('url')" placeholder="https://..." />
+                                <div id="wrap-lesson-url">
+                                    <x-input-label for="lesson_url" :value="__('URL externa (Google Drive, etc.)')" />
+                                    <x-text-input id="lesson_url" name="url" type="url" class="mt-1 block w-full" :value="old('url')" placeholder="Pegá un link de Google Drive (compartido) o cualquier URL https://..." />
                                     <x-input-error class="mt-2" :messages="$errors->get('url')" />
+                                    <p class="text-xs text-slate-500 mt-1">Si completás esta URL, no hace falta subir archivo. Para Drive: compartí como “Cualquiera con el enlace”.</p>
                                 </div>
                                 <div id="wrap-lesson-file">
                                     <x-input-label for="lesson_file" :value="__('Archivo')" />
@@ -97,14 +98,10 @@
                                 var sel = document.getElementById('lesson_file_type');
                                 var wrapUrl = document.getElementById('wrap-lesson-url');
                                 var wrapFile = document.getElementById('wrap-lesson-file');
-                                var fileInput = document.getElementById('lesson_file');
-                                var urlInput = document.getElementById('lesson_url');
+                                // Mantenemos ambos visibles: se valida en backend que haya archivo o URL (y en tipo link, URL obligatoria)
                                 function toggle() {
                                     var isLink = sel.value === 'link';
-                                    wrapUrl.classList.toggle('hidden', !isLink);
-                                    wrapFile.classList.toggle('hidden', isLink);
-                                    fileInput.required = !isLink;
-                                    urlInput.required = isLink;
+                                    wrapFile.classList.toggle('opacity-60', isLink);
                                 }
                                 sel.addEventListener('change', toggle);
                                 toggle();
