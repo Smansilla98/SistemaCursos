@@ -19,3 +19,12 @@ yarn-error.log
 
 # Docker
 docker-compose.override.yml
+
+# Nunca commitear entornos ni volcados de variables (auditoria 2026-08)
+.env
+.env.*
+!.env.example
+ENV_*.txt
+*.pem
+*.key
+storage/*.key
