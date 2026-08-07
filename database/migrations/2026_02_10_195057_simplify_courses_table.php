@@ -17,6 +17,12 @@ return new class extends Migration
             $table->dropForeign(['teacher_id']);
         });
 
+        // Eliminar el indice unico de slug antes de borrar la columna
+        // (SQLite falla al eliminar una columna que todavia tiene un indice asociado)
+        Schema::table('courses', function (Blueprint $table) {
+            $table->dropUnique('courses_slug_unique');
+        });
+
         // Eliminar columnas
         Schema::table('courses', function (Blueprint $table) {
             $table->dropColumn(['category_id', 'teacher_id', 'slug', 'short_description', 'requires_payment', 'order']);
