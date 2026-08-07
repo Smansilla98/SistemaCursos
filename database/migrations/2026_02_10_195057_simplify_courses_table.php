@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -23,8 +22,10 @@ return new class extends Migration
             $table->dropColumn(['category_id', 'teacher_id', 'slug', 'short_description', 'requires_payment', 'order']);
         });
 
-        // Renombrar cover_image a thumbnail usando raw SQL
-        DB::statement('ALTER TABLE courses CHANGE cover_image thumbnail VARCHAR(255) NULL');
+        // Renombrar cover_image a thumbnail de forma portable
+        Schema::table('courses', function (Blueprint $table) {
+            $table->renameColumn('cover_image', 'thumbnail');
+        });
 
         // Eliminar tablas no requeridas
         Schema::dropIfExists('categories');

@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -21,9 +20,10 @@ return new class extends Migration
             $table->dropColumn(['payment_method', 'mercadopago_preference_id', 'payment_proof', 'notes']);
         });
 
-        // Renombrar columna (hacerlo en una migración separada si es necesario)
-        // Nota: renameColumn puede no funcionar en todos los DB, usar raw SQL si es necesario
-        DB::statement('ALTER TABLE purchases CHANGE mercadopago_payment_id payment_id VARCHAR(255) NULL');
+        // Renombrar columna de forma portable (funciona en MySQL, PostgreSQL y SQLite)
+        Schema::table('purchases', function (Blueprint $table) {
+            $table->renameColumn('mercadopago_payment_id', 'payment_id');
+        });
     }
 
     /**
