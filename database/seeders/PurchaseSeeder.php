@@ -18,7 +18,7 @@ class PurchaseSeeder extends Seeder
         $student = User::where('email', 'student@cursos.com')->first();
         $course = Course::where('is_active', true)->first();
 
-        if (!$student || !$course) {
+        if (! $student || ! $course) {
             return;
         }
 
@@ -30,12 +30,12 @@ class PurchaseSeeder extends Seeder
                 'status' => 'approved',
             ],
             [
-                'payment_id' => 'SEED_APPROVED_' . uniqid(),
+                'payment_id' => 'SEED_APPROVED_'.uniqid(),
                 'amount' => $course->price,
             ]
         );
 
-        if ($approved->wasRecentlyCreated && !$student->courses()->where('courses.id', $course->id)->exists()) {
+        if ($approved->wasRecentlyCreated && ! $student->courses()->where('courses.id', $course->id)->exists()) {
             $student->courses()->attach($course->id);
             $course->lessons()->update(['is_locked' => false]);
         }

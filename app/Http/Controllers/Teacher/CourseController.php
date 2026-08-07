@@ -4,10 +4,6 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
-use App\Models\Module;
-use App\Models\CourseFile;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
 {
@@ -30,7 +26,7 @@ class CourseController extends Controller
         }
 
         $course->load(['modules.files', 'files', 'category', 'users']);
-        
+
         return view('teacher.courses.show', compact('course'));
     }
 }

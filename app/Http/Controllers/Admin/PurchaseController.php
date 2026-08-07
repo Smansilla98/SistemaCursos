@@ -4,9 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Purchase;
-use App\Models\Course;
-use App\Models\User;
-use Illuminate\Http\Request;
 
 class PurchaseController extends Controller
 {
@@ -30,7 +27,7 @@ class PurchaseController extends Controller
         $course = $purchase->course;
 
         // Asignar curso al usuario si no lo tiene
-        if (!$user->courses()->where('courses.id', $course->id)->exists()) {
+        if (! $user->courses()->where('courses.id', $course->id)->exists()) {
             $user->courses()->attach($course->id);
         }
 
@@ -51,4 +48,3 @@ class PurchaseController extends Controller
             ->with('success', 'Compra rechazada');
     }
 }
-

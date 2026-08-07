@@ -58,6 +58,7 @@ class AccessKey extends Model
         if ($this->is_single_use && $this->is_used) {
             return false;
         }
+
         return true;
     }
 }

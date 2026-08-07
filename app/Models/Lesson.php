@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Lesson extends Model
 {
     public const TYPE_VIDEO = 'video';
+
     public const TYPE_PDF = 'pdf';
+
     public const TYPE_DOCUMENT = 'document';
+
     public const TYPE_IMAGE = 'image';
+
     public const TYPE_LINK = 'link';
 
     public static function typeLabels(): array
@@ -99,15 +103,17 @@ class Lesson extends Model
         }
         // Compat: antes 'link' aceptaba sin esquema (ej: www...)
         if ($this->isLink() && $this->file_path) {
-            return str_starts_with($this->file_path, 'http') ? $this->file_path : 'https://' . $this->file_path;
+            return str_starts_with($this->file_path, 'http') ? $this->file_path : 'https://'.$this->file_path;
         }
-        return $this->file_path ? asset('storage/' . $this->file_path) : '#';
+
+        return $this->file_path ? asset('storage/'.$this->file_path) : '#';
     }
 
     /** Si es un link de Google Drive/Docs, lo convertimos a un embed/preview */
     public function isGoogleDrive(): bool
     {
         $url = $this->getResourceUrlAttribute();
+
         return str_contains($url, 'drive.google.com') || str_contains($url, 'docs.google.com');
     }
 
@@ -128,6 +134,7 @@ class Lesson extends Model
             // Docs/Sheets/Slides: /d/{id}/preview
             if (preg_match('#docs\\.google\\.com/(document|spreadsheets|presentation)/d/([^/]+)#', $url, $m)) {
                 $type = $m[1];
+
                 return "https://docs.google.com/{$type}/d/{$id}/preview";
             }
         }
@@ -140,6 +147,7 @@ class Lesson extends Model
     {
         $url = $this->getResourceUrlAttribute();
         $id = $this->extractGoogleDriveId($url);
+
         return $id ? "https://drive.google.com/uc?export=download&id={$id}" : null;
     }
 
@@ -161,6 +169,7 @@ class Lesson extends Model
         if (preg_match('#docs\\.google\\.com/(document|spreadsheets|presentation)/d/([^/]+)#', $url, $m)) {
             return $m[2];
         }
+
         return null;
     }
 }

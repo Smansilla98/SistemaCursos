@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -14,7 +14,7 @@ return new class extends Migration
     {
         // Renombrar tabla modules a lessons
         Schema::rename('modules', 'lessons');
-        
+
         // Agregar campos de archivo a lessons
         Schema::table('lessons', function (Blueprint $table) {
             $table->string('file_type')->nullable()->after('description'); // video | pdf
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->boolean('is_locked')->default(true)->after('file_path');
             $table->dropColumn('is_active'); // No requerido
         });
-        
+
         // Migrar datos de course_files a lessons si existen
         // Esto se hace en caso de que haya datos existentes
         if (Schema::hasTable('course_files')) {
@@ -30,7 +30,7 @@ return new class extends Migration
             $courseFiles = DB::table('course_files')
                 ->whereNotNull('module_id')
                 ->get();
-            
+
             foreach ($courseFiles as $file) {
                 DB::table('lessons')
                     ->where('id', $file->module_id)
@@ -41,7 +41,7 @@ return new class extends Migration
                     ]);
             }
         }
-        
+
         // Eliminar tabla course_files (ya no se necesita)
         Schema::dropIfExists('course_files');
     }
@@ -55,9 +55,9 @@ return new class extends Migration
             $table->dropColumn(['file_type', 'file_path', 'is_locked']);
             $table->boolean('is_active')->default(true);
         });
-        
+
         Schema::rename('lessons', 'modules');
-        
+
         // Recrear course_files si es necesario
         Schema::create('course_files', function (Blueprint $table) {
             $table->id();

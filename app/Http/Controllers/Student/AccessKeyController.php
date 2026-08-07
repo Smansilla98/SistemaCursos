@@ -29,11 +29,11 @@ class AccessKeyController extends Controller
             ->where('course_id', $course->id)
             ->first();
 
-        if (!$accessKey) {
+        if (! $accessKey) {
             return back()->with('error', 'Clave inválida');
         }
 
-        if (!$accessKey->canBeUsed()) {
+        if (! $accessKey->canBeUsed()) {
             return back()->with('error', 'Esta clave ya ha sido utilizada');
         }
 

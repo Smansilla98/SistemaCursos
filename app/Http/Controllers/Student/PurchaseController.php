@@ -66,38 +66,37 @@ class PurchaseController extends Controller
     private function redirectToCheckout(Purchase $purchase, Course $course)
     {
         $accessToken = config('services.mercadopago.access_token');
-        if (!$accessToken) {
+        if (! $accessToken) {
             return redirect()->route('student.courses.show', $course)
                 ->with('info', 'Compra creada. El administrador la revisará manualmente.');
         }
 
         MercadoPagoConfig::setAccessToken($accessToken);
 
-        $client = new PreferenceClient();
+        $client = new PreferenceClient;
         $preference = $client->create([
-            "items" => [
+            'items' => [
                 [
-                    "title" => $course->title,
-                    "quantity" => 1,
-                    "unit_price" => (float) $course->price,
+                    'title' => $course->title,
+                    'quantity' => 1,
+                    'unit_price' => (float) $course->price,
                 ],
             ],
-            "back_urls" => [
-                "success" => route('student.purchases.success'),
-                "failure" => route('student.purchases.failure'),
-                "pending" => route('student.purchases.pending'),
+            'back_urls' => [
+                'success' => route('student.purchases.success'),
+                'failure' => route('student.purchases.failure'),
+                'pending' => route('student.purchases.pending'),
             ],
-            "notification_url" => route('api.mercadopago.webhook'),
-            "auto_return" => "approved",
-            "external_reference" => (string) $purchase->id,
+            'notification_url' => route('api.mercadopago.webhook'),
+            'auto_return' => 'approved',
+            'external_reference' => (string) $purchase->id,
         ]);
 
         $isTestToken = str_starts_with($accessToken, 'TEST-');
-        $checkoutUrl = $isTestToken && !empty($preference->sandbox_init_point)
+        $checkoutUrl = $isTestToken && ! empty($preference->sandbox_init_point)
             ? $preference->sandbox_init_point
             : $preference->init_point;
 
         return redirect($checkoutUrl);
     }
 }
-

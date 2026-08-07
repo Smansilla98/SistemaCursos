@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Student\CourseController as StudentCourseController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,6 +13,7 @@ Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }
+
     return redirect()->route('login');
 })->name('home');
 
@@ -31,6 +32,7 @@ Route::get('/dashboard', function () {
     if (auth()->user()->hasRole('profesor')) {
         return redirect()->route('student.courses.index');
     }
+
     return redirect()->route('student.courses.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 

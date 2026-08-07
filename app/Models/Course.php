@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -31,13 +30,14 @@ class Course extends Model
 
     public function getThumbnailUrlAttribute(): ?string
     {
-        if (!$this->thumbnail) {
+        if (! $this->thumbnail) {
             return null;
         }
         if ($this->isExternalThumbnail()) {
             return $this->normalizeExternalThumbnailUrl($this->thumbnail);
         }
-        return asset('storage/' . $this->thumbnail);
+
+        return asset('storage/'.$this->thumbnail);
     }
 
     private function normalizeExternalThumbnailUrl(string $url): string
@@ -47,6 +47,7 @@ class Course extends Model
             // Convierte links "compartir" de Drive a URL apta para <img>
             return "https://drive.google.com/thumbnail?id={$id}&sz=w1600";
         }
+
         return $url;
     }
 
@@ -61,6 +62,7 @@ class Course extends Model
         if (preg_match('#drive\\.google\\.com/uc\\?id=([^&]+)#', $url, $m)) {
             return $m[1];
         }
+
         return null;
     }
 

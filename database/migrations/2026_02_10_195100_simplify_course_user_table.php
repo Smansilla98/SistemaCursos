@@ -19,7 +19,7 @@ return new class extends Migration
                 'unlocked_at',
                 'payment_id',
                 'access_key_id',
-                'progress'
+                'progress',
             ]);
         });
     }
@@ -39,4 +39,3 @@ return new class extends Migration
         });
     }
 };
-

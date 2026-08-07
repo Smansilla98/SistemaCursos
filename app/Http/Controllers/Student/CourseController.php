@@ -122,10 +122,11 @@ class CourseController extends Controller
             abort(403);
         }
 
-        if (!Schema::hasTable('lesson_user')) {
+        if (! Schema::hasTable('lesson_user')) {
             if ($request->wantsJson()) {
                 return response()->json(['error' => 'Progreso no disponible (faltan migraciones)'], 503);
             }
+
             return back()->with('error', 'El progreso no está disponible todavía (faltan migraciones en el servidor).');
         }
 
@@ -142,7 +143,7 @@ class CourseController extends Controller
 
         if ($next) {
             return redirect()->route('student.courses.lesson', [$course, $next])
-                ->with('success', 'Lección completada. Siguiente: ' . $next->title);
+                ->with('success', 'Lección completada. Siguiente: '.$next->title);
         }
 
         return redirect()->route('student.courses.show', $course)

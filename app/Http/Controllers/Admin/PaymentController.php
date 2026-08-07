@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
-use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -30,7 +29,7 @@ class PaymentController extends Controller
         $user = $payment->user;
         $course = $payment->course;
 
-        if (!$user->hasAccessToCourse($course->id)) {
+        if (! $user->hasAccessToCourse($course->id)) {
             $user->courses()->attach($course->id, [
                 'access_type' => 'payment',
                 'is_unlocked' => true,

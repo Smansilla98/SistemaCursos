@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -17,15 +17,15 @@ return new class extends Migration
             $table->dropForeign(['category_id']);
             $table->dropForeign(['teacher_id']);
         });
-        
+
         // Eliminar columnas
         Schema::table('courses', function (Blueprint $table) {
             $table->dropColumn(['category_id', 'teacher_id', 'slug', 'short_description', 'requires_payment', 'order']);
         });
-        
+
         // Renombrar cover_image a thumbnail usando raw SQL
         DB::statement('ALTER TABLE courses CHANGE cover_image thumbnail VARCHAR(255) NULL');
-        
+
         // Eliminar tablas no requeridas
         Schema::dropIfExists('categories');
         Schema::dropIfExists('access_keys');
@@ -46,7 +46,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
-        
+
         Schema::create('access_keys', function (Blueprint $table) {
             $table->id();
             $table->foreignId('course_id')->constrained()->onDelete('cascade');
@@ -58,7 +58,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
         });
-        
+
         Schema::table('courses', function (Blueprint $table) {
             $table->renameColumn('thumbnail', 'cover_image');
             $table->string('slug')->unique()->after('title');

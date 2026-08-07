@@ -16,6 +16,7 @@ class CourseController extends Controller
     public function index()
     {
         $courses = Course::latest()->paginate(15);
+
         return view('admin.courses.index', compact('courses'));
     }
 
@@ -35,14 +36,14 @@ class CourseController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        if (!empty($validated['thumbnail_url']) && $request->hasFile('thumbnail')) {
+        if (! empty($validated['thumbnail_url']) && $request->hasFile('thumbnail')) {
             throw ValidationException::withMessages([
                 'thumbnail' => 'Usá archivo o URL externa, no ambos.',
                 'thumbnail_url' => 'Usá archivo o URL externa, no ambos.',
             ]);
         }
 
-        if (!empty($validated['thumbnail_url'])) {
+        if (! empty($validated['thumbnail_url'])) {
             $validated['thumbnail'] = $validated['thumbnail_url'];
         } elseif ($request->hasFile('thumbnail')) {
             $validated['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
@@ -58,6 +59,7 @@ class CourseController extends Controller
     public function show(Course $course)
     {
         $course->load('lessons');
+
         return view('admin.courses.show', compact('course'));
     }
 
@@ -77,20 +79,20 @@ class CourseController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        if (!empty($validated['thumbnail_url']) && $request->hasFile('thumbnail')) {
+        if (! empty($validated['thumbnail_url']) && $request->hasFile('thumbnail')) {
             throw ValidationException::withMessages([
                 'thumbnail' => 'Usá archivo o URL externa, no ambos.',
                 'thumbnail_url' => 'Usá archivo o URL externa, no ambos.',
             ]);
         }
 
-        if (!empty($validated['thumbnail_url'])) {
-            if ($course->thumbnail && !$course->isExternalThumbnail()) {
+        if (! empty($validated['thumbnail_url'])) {
+            if ($course->thumbnail && ! $course->isExternalThumbnail()) {
                 Storage::disk('public')->delete($course->thumbnail);
             }
             $validated['thumbnail'] = $validated['thumbnail_url'];
         } elseif ($request->hasFile('thumbnail')) {
-            if ($course->thumbnail && !$course->isExternalThumbnail()) {
+            if ($course->thumbnail && ! $course->isExternalThumbnail()) {
                 Storage::disk('public')->delete($course->thumbnail);
             }
             $validated['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
@@ -110,7 +112,7 @@ class CourseController extends Controller
                 Storage::disk('public')->delete($lesson->file_path);
             }
         }
-        if ($course->thumbnail && !$course->isExternalThumbnail()) {
+        if ($course->thumbnail && ! $course->isExternalThumbnail()) {
             Storage::disk('public')->delete($course->thumbnail);
         }
         $course->delete();
@@ -126,27 +128,27 @@ class CourseController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:2000',
             'order' => 'required|integer|min:0',
-            'file_type' => 'required|in:' . implode(',', Lesson::fileTypes()),
+            'file_type' => 'required|in:'.implode(',', Lesson::fileTypes()),
             'is_locked' => 'boolean',
             // Permite recursos externos (Drive) sin subir archivo
             'url' => 'nullable|url|max:2000',
-            'file' => 'nullable|file|max:' . (self::LESSON_FILE_MAX_MB * 1024),
+            'file' => 'nullable|file|max:'.(self::LESSON_FILE_MAX_MB * 1024),
         ];
 
         $validated = $request->validate($rules);
 
         // Validación cruzada: link => requiere url; otros => requiere (file o url)
         $hasFile = $request->hasFile('file');
-        $hasUrl = !empty($validated['url']);
+        $hasUrl = ! empty($validated['url']);
         if ($validated['file_type'] === Lesson::TYPE_LINK) {
-            if (!$hasUrl) {
+            if (! $hasUrl) {
                 throw ValidationException::withMessages(['url' => 'La URL es obligatoria para el tipo Enlace.']);
             }
             if ($hasFile) {
                 throw ValidationException::withMessages(['file' => 'Para el tipo Enlace no se sube archivo.']);
             }
         } else {
-            if (!($hasFile || $hasUrl)) {
+            if (! ($hasFile || $hasUrl)) {
                 throw ValidationException::withMessages([
                     'file' => 'Subí un archivo o pegá una URL externa (por ejemplo Google Drive).',
                     'url' => 'Pegá una URL externa o subí un archivo.',
@@ -179,6 +181,7 @@ class CourseController extends Controller
     public function editLesson(Lesson $lesson)
     {
         $lesson->load('course');
+
         return view('admin.lessons.edit', compact('lesson'));
     }
 
@@ -188,19 +191,19 @@ class CourseController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:2000',
             'order' => 'required|integer|min:0',
-            'file_type' => 'required|in:' . implode(',', Lesson::fileTypes()),
+            'file_type' => 'required|in:'.implode(',', Lesson::fileTypes()),
             'is_locked' => 'boolean',
             'url' => 'nullable|url|max:2000',
-            'file' => 'nullable|file|max:' . (self::LESSON_FILE_MAX_MB * 1024),
+            'file' => 'nullable|file|max:'.(self::LESSON_FILE_MAX_MB * 1024),
         ];
 
         $validated = $request->validate($rules);
 
         $hasFile = $request->hasFile('file');
-        $hasUrl = !empty($validated['url']);
+        $hasUrl = ! empty($validated['url']);
 
         if ($validated['file_type'] === Lesson::TYPE_LINK) {
-            if (!$hasUrl) {
+            if (! $hasUrl) {
                 throw ValidationException::withMessages(['url' => 'La URL es obligatoria para el tipo Enlace.']);
             }
             if ($hasFile) {
@@ -208,7 +211,7 @@ class CourseController extends Controller
             }
         } else {
             // Si cambia de enlace a archivo sin URL, necesita un archivo
-            if (!($hasFile || $hasUrl) && ($lesson->isLink() || $lesson->isExternal())) {
+            if (! ($hasFile || $hasUrl) && ($lesson->isLink() || $lesson->isExternal())) {
                 throw ValidationException::withMessages([
                     'file' => 'Subí un archivo o pegá una URL externa.',
                     'url' => 'Pegá una URL externa o subí un archivo.',

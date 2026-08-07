@@ -13,6 +13,7 @@ class AccessKeyController extends Controller
     public function index()
     {
         $keys = AccessKey::with(['course', 'user'])->latest()->paginate(20);
+
         return view('admin.access-keys.index', compact('keys'));
     }
 
@@ -20,6 +21,7 @@ class AccessKeyController extends Controller
     {
         $courses = Course::where('is_active', true)->get();
         $users = User::role('alumno')->get();
+
         return view('admin.access-keys.create', compact('courses', 'users'));
     }
 
@@ -47,7 +49,7 @@ class AccessKeyController extends Controller
 
         if ($quantity === 1) {
             return redirect()->route('admin.access-keys.index')
-                ->with('success', 'Clave generada exitosamente: ' . $keys[0]->key);
+                ->with('success', 'Clave generada exitosamente: '.$keys[0]->key);
         }
 
         return redirect()->route('admin.access-keys.index')
@@ -57,12 +59,14 @@ class AccessKeyController extends Controller
     public function show(AccessKey $accessKey)
     {
         $accessKey->load(['course', 'user']);
+
         return view('admin.access-keys.show', compact('accessKey'));
     }
 
     public function destroy(AccessKey $accessKey)
     {
         $accessKey->delete();
+
         return redirect()->route('admin.access-keys.index')
             ->with('success', 'Clave eliminada exitosamente');
     }

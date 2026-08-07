@@ -45,23 +45,23 @@ class PaymentController extends Controller
         $accessToken = config('services.mercadopago.access_token');
         if ($accessToken) {
             MercadoPagoConfig::setAccessToken($accessToken);
-            
-            $client = new PreferenceClient();
+
+            $client = new PreferenceClient;
             $preference = $client->create([
-                "items" => [
+                'items' => [
                     [
-                        "title" => $course->title,
-                        "quantity" => 1,
-                        "unit_price" => (float) $course->price,
-                    ]
+                        'title' => $course->title,
+                        'quantity' => 1,
+                        'unit_price' => (float) $course->price,
+                    ],
                 ],
-                "back_urls" => [
-                    "success" => route('student.payments.success'),
-                    "failure" => route('student.payments.failure'),
-                    "pending" => route('student.payments.pending'),
+                'back_urls' => [
+                    'success' => route('student.payments.success'),
+                    'failure' => route('student.payments.failure'),
+                    'pending' => route('student.payments.pending'),
                 ],
-                "auto_return" => "approved",
-                "external_reference" => $payment->id,
+                'auto_return' => 'approved',
+                'external_reference' => $payment->id,
             ]);
 
             $payment->update([
