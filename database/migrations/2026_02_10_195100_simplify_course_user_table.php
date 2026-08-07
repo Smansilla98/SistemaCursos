@@ -11,6 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Eliminar las foreign keys antes de borrar las columnas
+        // (SQLite falla si la columna todavia participa de una FK)
+        Schema::table('course_user', function (Blueprint $table) {
+            $table->dropForeign(['payment_id']);
+            $table->dropForeign(['access_key_id']);
+        });
+
         Schema::table('course_user', function (Blueprint $table) {
             // Eliminar columnas no requeridas
             $table->dropColumn([
