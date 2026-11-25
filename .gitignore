@@ -28,3 +28,7 @@ ENV_*.txt
 *.pem
 *.key
 storage/*.key
+
+# Caches de herramientas
+.phpunit.cache
+.DS_Store
